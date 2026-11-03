@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CapSi · prototype test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --surface-base:#f5f0e8; --surface-warm:#f6ebe0; --surface-card:#fdfbf7; --surface-inverse:#1b1815;
+  --ink:#181410; --ink2:#2c2620; --muted:#6f6a62; --subtle:#8f887d; --ink-inv:#faf6f0;
+  --accent:#e05a43; --accent-s:#c74a35; --accent-soft:#f7ddd4;
+  --green:#3f8f63; --green-dot:#57ac83; --green-bg:#e4f0e7;
+  --line:#e7e0d4; --line2:#d8d0c2; --line3:#c3b9a8;
+  --cream:#f3e7d6; --peach:#f0d3b8; --sand:#e4cba9; --taupe:#b7a68f; --slate:#9a9793;
+  --serif:"Playfair Display","Times New Roman",Georgia,serif; --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--sans);color:var(--ink);background:var(--surface-warm);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea{font:inherit;color:inherit}
+.stage{min-height:var(--app-h,100vh);display:flex;align-items:center;justify-content:center;gap:56px;padding:20px}
+.side{max-width:310px;max-height:calc(var(--app-h,100vh) - 40px);overflow-y:auto;color:var(--muted);font-size:15px;line-height:1.55}
+.side .eyebrow{margin-bottom:14px}
+.side h1{font-family:var(--serif);font-weight:500;font-size:40px;line-height:.98;text-transform:uppercase;color:var(--ink);margin-bottom:16px;letter-spacing:-.01em}
+.side p{margin-bottom:10px}
+.phone{--ph:max(520px, min(800px, calc(var(--app-h,100vh) - 44px)));height:var(--ph);width:min(390px, max(360px, calc(var(--ph) * 0.4875)));flex-shrink:0;background:var(--surface-base);border-radius:44px;box-shadow:0 8px 24px rgba(24,20,16,.08),0 0 0 10px var(--surface-inverse);position:relative;overflow:hidden;display:flex;flex-direction:column}
+@media (max-width:760px){
+  .stage{padding:0;display:block;min-height:0}
+  .side{display:none}
+  .statusbar,.phone::after{display:none}
+  .toast{top:14px}
+  .heatTag{top:62px}
+  .screen{padding-top:14px}
+  .phone{width:100%;height:var(--app-h,100vh);min-height:480px;border-radius:0;box-shadow:none}
+}
+.screen{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:10px 22px 120px;scroll-behavior:smooth;overscroll-behavior:contain}
+.screen.noTabs{padding-bottom:0}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px}
+.wordmark{font-family:var(--sans);font-weight:700;font-size:22px;letter-spacing:-.02em;color:var(--ink);line-height:1}
+.proto{white-space:nowrap;display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:500;color:var(--ink);background:var(--surface-card);border:1px solid var(--line2);padding:5px 10px 5px 8px;border-radius:999px}
+.proto::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green-dot);box-shadow:0 0 0 3px var(--green-bg)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.display{font-family:var(--serif);font-weight:500;font-size:44px;line-height:.95;letter-spacing:-.01em;text-transform:uppercase}
+h2{font-family:var(--serif);font-weight:500;font-size:28px;line-height:1.15;margin-bottom:8px}
+h3{font-family:var(--serif);font-weight:500;font-size:20px;line-height:1.2;margin-bottom:4px}
+.sub{color:var(--muted);font-size:15px;line-height:1.55}
+.small{font-size:12px;color:var(--subtle);line-height:1.5}
+.under{display:none}
+.card{background:var(--surface-card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.tint{background:var(--cream);border:1px solid var(--line)}
+.stack>*+*{margin-top:12px}
+.row{display:flex;align-items:center;gap:12px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px 22px;border-radius:6px;background:var(--surface-inverse);color:var(--ink-inv);font-weight:500;font-size:15px;letter-spacing:.01em;border:1px solid transparent;transition:opacity .2s,transform .1s}
+.btn:active{transform:scale(.99)}
+.btn:disabled{background:var(--line2);color:var(--muted);cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line3)}
+.btn.dark{background:var(--surface-inverse)}
+.btn.sm{width:auto;padding:11px 16px;font-size:14px}
+.btn.link{border:0;background:none;color:var(--ink);padding:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 15px;border-radius:999px;border:1px solid var(--line2);background:var(--surface-card);font-size:14px;color:var(--ink2);transition:all .15s}
+.chip.on{border-color:var(--surface-inverse);background:var(--surface-inverse);color:var(--ink-inv)}
+.amount{flex:1;min-width:70px;text-align:center;padding:16px 6px;font-family:var(--serif);font-size:22px;font-weight:500;border-radius:10px}
+.progress{height:6px;background:rgba(250,246,240,.15);border-radius:6px;overflow:hidden}
+.progress>i{display:block;height:100%;background:var(--accent);border-radius:6px;transition:width .6s ease}
+.steps{display:flex;gap:6px;margin-bottom:24px}
+.steps i{flex:1;height:2px;background:var(--line2)}
+.steps i.on{background:var(--ink)}
+.big{font-family:var(--serif);font-size:42px;font-weight:500;letter-spacing:-.01em;line-height:1.05}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 9px;border-radius:999px;background:var(--surface-card);border:1px solid var(--line2);color:var(--ink2)}
+.pill.coral{background:var(--accent-soft);border-color:transparent;color:var(--accent-s);font-weight:600}
+.pill.green{background:var(--green-bg);border-color:transparent;color:var(--green)}
+.pill.warm{background:var(--cream);border-color:transparent;color:var(--ink2)}
+.avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:500;color:var(--ink);flex-shrink:0;font-size:18px}
+.list{border-top:1px solid var(--line)}
+.list>button{width:100%;text-align:left;display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.grow{flex:1;min-width:0}
+.ellip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabs{position:absolute;left:0;right:0;bottom:0;background:var(--surface-base);border-top:1px solid var(--line);display:flex;padding:8px 6px 26px;z-index:8}
+.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--subtle);padding:6px 0}
+.tabs button.on{color:var(--ink)}
+.tabs svg{width:21px;height:21px}
+.seg{display:flex;border-bottom:1px solid var(--line);margin:18px 0 16px}
+.seg button{flex:1;padding:10px 0 12px;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--subtle);border-bottom:2px solid transparent;margin-bottom:-1px}
+.seg button.on{color:var(--ink);border-color:var(--ink)}
+.badges{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.badge{flex-shrink:0;width:78px;text-align:center;font-size:11px;font-weight:500;color:var(--subtle)}
+.badge .b{width:56px;height:56px;margin:0 auto 7px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:transparent;border:1px dashed var(--line3);color:var(--line3)}
+.badge.on .b{background:var(--cream);border:1px solid var(--sand);color:var(--ink)}
+.badge.on{color:var(--ink)}
+.badge svg{width:24px;height:24px}
+.sheetBg{position:absolute;inset:0;background:rgba(24,20,16,.35);opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}
+.sheetBg.open{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface-base);border-radius:24px 24px 0 0;max-height:88%;overflow-y:auto;padding:12px 22px 30px;transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);z-index:21}
+.sheet.open{transform:none}
+.grab{width:40px;height:4px;border-radius:4px;background:var(--line2);margin:0 auto 16px}
+.toast{position:absolute;left:20px;right:20px;top:54px;opacity:0;visibility:hidden;background:var(--surface-inverse);color:var(--ink-inv);border-radius:10px;padding:14px 16px;font-size:14px;font-weight:500;display:flex;gap:10px;align-items:center;transform:translateY(-140%);transition:transform .35s cubic-bezier(.2,.8,.2,1);z-index:40;box-shadow:0 8px 24px rgba(24,20,16,.08)}
+.toast.show{transform:none;opacity:1;visibility:visible}
+.toast .plus{background:var(--accent);color:#fff;border-radius:6px;padding:3px 8px;font-weight:700}
+.fbTop{display:flex;align-items:center;gap:6px;background:transparent;color:var(--ink);border:1px solid var(--line3);border-radius:6px;padding:7px 11px;font-size:12px;font-weight:500}
+.fbTop svg{width:15px;height:15px}
+.fb{display:none}
+.slot{padding:13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface-card);font-weight:500;font-size:14px;text-align:center}
+.slot.on{border-color:var(--surface-inverse);background:var(--surface-inverse);color:var(--ink-inv)}
+.q{margin:22px 0 10px;font-weight:600;font-size:15px}
+.scale{display:flex;gap:6px}
+.scale button{flex:1;padding:12px 0;border-radius:10px;border:1px solid var(--line2);background:var(--surface-card);font-family:var(--serif);font-size:18px}
+.scale button.on{border-color:var(--surface-inverse);background:var(--surface-inverse);color:var(--ink-inv)}
+textarea,input[type=text],input[type=email]{width:100%;border:1px solid var(--line2);border-radius:10px;padding:13px;font-size:15px;resize:vertical;background:var(--surface-card)}
+textarea:focus,input:focus{outline:none;border-color:var(--line3);box-shadow:0 0 0 3px var(--cream)}
+.chart{width:100%;height:80px;display:block}
+.ask .meta{font-size:12px;color:var(--muted);margin-top:3px}
+.lb{display:flex;align-items:center;gap:10px;padding:10px 0;font-size:14px;border-bottom:1px solid var(--line)}
+.lb:last-child{border-bottom:0}
+.lb .n{width:20px;font-family:var(--serif);font-size:16px;color:var(--subtle)}
+.lb.me{background:var(--cream);border-radius:10px;padding:10px;border:0}
+.confetti{position:absolute;inset:0;pointer-events:none;z-index:39;overflow:hidden}
+.confetti i{position:absolute;width:8px;height:12px;top:-20px;border-radius:2px;animation:fall 1.4s ease-in forwards}
+@keyframes fall{to{transform:translateY(860px) rotate(540deg);opacity:.2}}
+.lesson{display:flex;gap:14px;align-items:center}
+.lesson .ic{width:44px;height:44px;border-radius:50%;background:var(--cream);color:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lesson .ic svg{width:21px;height:21px}
+.done .ic{background:var(--green-bg);color:var(--green)}
+.hidden{display:none!important}
+/* polish */
+body{font-variant-numeric:lining-nums}
+.display,.big,h1,h2,h3,.amount,.kpi b,.scale button{font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1}
+.statusbar{height:46px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:4px 30px 0 36px;font-size:15px;font-weight:600;color:var(--ink);letter-spacing:-.01em}
+.statusbar .sb{display:flex;gap:6px;align-items:center}
+.statusbar svg{display:block}
+.phone::after{content:"";position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:128px;height:5px;border-radius:3px;background:var(--ink);opacity:.85;z-index:26;pointer-events:none}
+.acts{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.fbTop{height:34px;white-space:nowrap}
+.fbTop.icon{width:34px;padding:0;justify-content:center}
+.ctaBar{position:sticky;bottom:0;z-index:6;margin:22px -22px 0;padding:22px 22px 26px;background:linear-gradient(to bottom,rgba(245,240,232,0) 0,var(--surface-base) 22px)}
+.sheet:has(.ctaBar){padding-bottom:0}
+.sheet .ctaBar{margin:22px -22px 0;padding-bottom:28px}
+.ctaBar .btn+.btn{margin-top:8px}
+.linkRow{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.linkRow .btn.link{width:auto;padding:10px 4px}
+.linkRow .muted{color:var(--subtle);font-size:13px}
+.err{color:var(--accent-s)}
+.fbTab{position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:12;background:var(--surface-inverse);color:var(--ink-inv);border-radius:10px 0 0 10px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 8px 24px rgba(24,20,16,.14);transition:opacity .2s,transform .2s}
+.fbTab span{writing-mode:vertical-rl;transform:rotate(180deg)}
+.fbTab svg{width:15px;height:15px}
+.fbTab:hover{transform:translateY(-50%) translateX(-2px)}
+.phone.sheetOpen .fbTab,.phone.results .fbTab{opacity:0;pointer-events:none}
+.fbHint{position:absolute;right:36px;top:50%;transform:translateY(-50%);z-index:12;background:var(--surface-card);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.4;color:var(--ink2);max-width:190px;box-shadow:0 8px 24px rgba(24,20,16,.08);opacity:0;pointer-events:none;transition:opacity .3s}
+.fbHint.show{opacity:1}
+.react{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.react button{padding:12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface-card);font-size:14px;font-weight:500;text-align:left;display:flex;gap:8px;align-items:center}
+.react button.on{border-color:var(--surface-inverse);background:var(--surface-inverse);color:var(--ink-inv)}
+.react svg{width:16px;height:16px}
+@media (max-width:760px){.statusbar,.phone::after{display:none}.toast{top:14px}.heatTag{top:62px}.screen{padding-top:14px}}
+
+.lang{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;letter-spacing:.04em}
+.lang button{color:var(--subtle);padding:4px 2px}
+.lang button.on{color:var(--ink)}
+.lang i{font-style:normal;color:var(--line3)}
+.switch{width:48px;height:28px;border-radius:999px;background:var(--line2);position:relative;transition:background .2s;flex-shrink:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 2px rgba(24,20,16,.2)}
+.switch.on{background:var(--surface-inverse)}
+.switch.on::after{left:23px}
+.kv{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kv:last-of-type{border-bottom:0}
+.kv span{color:var(--muted);flex-shrink:0}
+.kv b{font-weight:600;text-align:right}
+.secHead{display:flex;justify-content:space-between;align-items:center;margin:22px 0 10px}
+.edit{font-size:13px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:1px}
+#heat{position:absolute;inset:0;pointer-events:none;z-index:30}
+.heatTag{position:absolute;left:50%;top:100px;transform:translateX(-50%);z-index:31;background:var(--surface-inverse);color:var(--ink-inv);font-size:12px;font-weight:500;padding:7px 12px;border-radius:999px;white-space:nowrap;display:flex;gap:8px;align-items:center}
+.heatTag button{color:var(--peach);font-weight:600;font-size:12px}
+.res h1{font-size:34px!important}
+.res .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.res .kpi{background:var(--surface-card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.res .kpi b{font-family:var(--serif);font-size:24px;font-weight:500;color:var(--ink);display:block}
+.res .qq{margin-top:16px;color:var(--ink)}
+.res .qq p{font-size:13px;font-weight:600;margin-bottom:6px}
+.res .bar{display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0;color:var(--ink2)}
+.res .bar span:first-child{width:120px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.res .bar i{display:block;height:8px;background:var(--sand);border-radius:4px}
+.res .bar em{font-style:normal;color:var(--subtle)}
+.res .quote{font-size:13px;color:var(--ink2);background:var(--surface-card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0}
+.res .quote small{display:block;color:var(--subtle);margin-top:3px}
+.side.res{max-width:380px;max-height:calc(100vh - 48px);overflow-y:auto;padding-right:12px}
+.ico{width:18px;height:18px;flex-shrink:0}
+.orb{position:relative;width:220px;height:220px;margin:0 auto}
+.orb i{position:absolute;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%)}
+.darkcard{background:var(--surface-inverse);color:var(--ink-inv);border-radius:16px;padding:20px}
+.darkcard .lbl{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(250,246,240,.6)}
+.aBody{margin-top:10px}
+.aBody .stack{gap:8px}
+@media (max-height:760px){.aBody h2{font-size:25px}.aBody .sub{font-size:14px;margin-top:6px}.aRow{padding:8px 12px}.aBody .card{padding:10px 12px!important}.pcell{padding:8px 10px}.aBody .ticks p{margin-top:3px}}
+.aRow{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface-card)}
+.aRow .ic{width:34px;height:34px;border-radius:50%;background:var(--cream);color:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.aRow .ic .ico{width:19px;height:19px}
+.aRow .avatar{flex-shrink:0}
+.aRow b{font-size:14px;font-weight:600}
+.aRow .avatar{width:34px;height:34px;font-size:13px;color:var(--ink)}
+.aRow .avatar .ico{width:18px;height:18px}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.pcell{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--surface-card)}
+.pcell .ico{color:var(--accent-s);width:18px;height:18px;flex-shrink:0}
+.pcell b{font-size:13px;font-weight:600;line-height:1.25}
+.pcell .small{margin-top:4px;font-size:12px;line-height:1.35}
+.split{display:flex;height:8px;border-radius:99px;overflow:hidden;gap:2px}
+.split i{display:block;background:var(--accent)}
+.split i+i{background:var(--sand)}
+.chip.sm{padding:5px 10px;font-size:12px;cursor:default}
+.ticks p{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink2);margin-top:5px}
+.ticks .ico{color:var(--green);width:18px;height:18px;flex-shrink:0}
+.card.deal{width:100%;text-align:left;cursor:pointer}
+.progress.light{background:var(--line);height:6px}
+.progress.light i{background:var(--accent)}
+.ownerLink{display:block;margin-top:28px;background:none;border:0;padding:0;font:inherit;font-size:12px;color:var(--muted,#6f6a62);opacity:.55;cursor:pointer;text-decoration:underline}
+.ownerLink:hover{opacity:1}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="side" id="side">
+    <span class="lang" style="margin-bottom:18px"><button data-l="en" onclick="setLang('en')">EN</button><i>/</i><button data-l="de" onclick="setLang('de')">DE</button></span>
+    <p class="eyebrow">Prototype · for feedback</p>
+    <h1>Start small. Think big.</h1>
+    <p>This is an early test version. Nothing here is real: no money moves, and the startups and numbers are made up.</p>
+    <p>Click around for about 5 minutes, try the <b>Time Bank</b>, then tap <b>Feedback</b> to tell us what you think.</p>
+    <p class="small">Thank you for helping us build this.</p>
+    <button class="btn ghost sm" style="margin-top:14px" onclick="openRestart()">Start over from the beginning</button>
+    <button class="ownerLink" onclick="openLogin()">Owner login</button>
+  </div>
+  <div class="phone" id="phone">
+    <div class="statusbar" aria-hidden="true"><span>9:41</span><span class="sb">
+      <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="#181410"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="#181410"/><rect x="10" y="3" width="3" height="9" rx="1" fill="#181410"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#181410"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5 10.4 9a3.4 3.4 0 0 0-4.8 0Z" fill="#181410"/><path d="M3.4 6.8a6.5 6.5 0 0 1 9.2 0" stroke="#181410" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M1 4.3a10 10 0 0 1 14 0" stroke="#181410" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" stroke="#181410" fill="none" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="#181410"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="#181410" opacity=".45"/></svg>
+    </span></div>
+    <div class="screen" id="screen"></div>
+    <nav class="tabs hidden" id="tabs"></nav>
+    <button class="fb hidden" id="fbBtn"></button>
+    <div class="sheetBg" id="sheetBg"></div>
+    <div class="sheet" id="sheet"></div>
+    <div class="toast" id="toast"></div>
+    <div class="confetti" id="confetti"></div>
+    <button class="fbTab" id="fbTab" onclick="openNote()" aria-label="Feedback on this screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Feedback</span></button>
+    <div class="fbHint" id="fbHint">Thoughts on this screen? Tap here anytime.</div>
+    <canvas id="heat" class="hidden"></canvas>
+    <div class="heatTag hidden" id="heatTag"></div>
+  </div>
+</div>
+
+<script>
+/* ---------- icons (Lucide-style, inline) ---------- */
+const P = {
+  home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  msg:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+  test:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+  link:'<circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="m8.6 10.5 6.8-3M8.6 13.5l6.8 3"/>',
+  legal:'<path d="M12 3v18M5 7h14M7 7l-3 7a3 3 0 0 0 6 0zM17 7l-3 7a3 3 0 0 0 6 0z"/>',
+  trend:'<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  brief:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  award:'<circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 7 5-3 5 3-1.5-7"/>',
+  star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+  heart:'<path d="M12 20s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z"/>',
+  flame:'<path d="M12 3s5 4 5 9a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3 1-5.5 1-7.5z"/>',
+  zap:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  check:'<path d="m5 12 5 5 9-10"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  play:'<circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4z"/>',
+  pie:'<path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M14 3.2A9 9 0 0 1 20.8 10H14z"/>',
+  layers:'<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+  shield:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>',
+  rotate:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
+  copy:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
+  bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>',
+  gift:'<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8S10 3 7.5 4.5 9 8 12 8zm0 0s2-5 4.5-3.5S15 8 12 8z"/>'
+};
+const I = (n, cls='ico') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${P[n]}</svg>`;
+const LOGO = `<span class="wordmark">CapSi</span>`;
+
+/* ---------- sample data (all fictional) ---------- */
+const STARTUPS = [
+  {id:'medora', lead:'A health-tech seed fund', name:'Medora', color:'#f0d3b8', sector:'Health', stage:'Seed', radar:true, founders:'A former ICU nurse and a self-taught developer. First-time founders with no investor network.', country:'Berlin',
+   what:'Helps hospitals order medical supplies without paperwork.', why:'Hospitals lose hours every week to manual ordering. Medora already runs in 6 clinics.',
+   val:'$9M', round:'$1.5M seed', risk:'Hospital sales cycles are slow.', update:'Signed clinic #6 in Munich. Hiring a sales lead.', share:46, change:+12},
+  {id:'loopwear', lead:'An angel network of e-commerce founders', name:'Loopwear', color:'#e4cba9', sector:'Consumer', stage:'Pre-seed', radar:true, founders:'Two parents who started it from their kitchen table, with no startup background.', country:'Amsterdam',
+   what:'Lets people rent and resell kids\' clothes in one app.', why:'Parents buy clothes that fit for 3 months. Loopwear keeps them in use for years.',
+   val:'$4M', round:'$600K pre-seed', risk:'Logistics costs must stay low.', update:'2,000 families on the waitlist. Testing in 2 cities.', share:31, change:0},
+  {id:'gridnest', lead:'A climate VC fund', name:'Gridnest', color:'#d8d0c2', sector:'Climate', stage:'Seed', radar:false, founders:'Battery engineers who built energy software at large utilities.', country:'Austin',
+   what:'Software that tells home batteries when to charge and sell power.', why:'Home batteries are spreading fast. Most sit idle most of the day.',
+   val:'$14M', round:'$2.5M seed', risk:'Depends on energy market rules.', update:'Partnership with a utility in Texas.', share:52, change:+18},
+  {id:'tallyo', lead:'An established Series A fund', name:'Tallyo', color:'#f3e7d6', sector:'Fintech', stage:'Series A', radar:true, founders:'A freelance bookkeeper who taught herself to code. No elite university, no big-name employer.', country:'London',
+   what:'Bookkeeping that runs itself for freelancers.', why:'Freelancers hate taxes. Tallyo has 40,000 paying users.',
+   val:'$60M', round:'$12M Series A', risk:'Big banks could copy it.', update:'Launched in Germany. Revenue up 3x this year.', share:64, change:+9},
+  {id:'nurtura', lead:'A women-led health fund', name:'Nurtura', color:'#b7a68f', sector:'Health', stage:'Pre-seed', radar:false, founders:'A gynaecologist and a second-time founder.', country:'New York',
+   what:'Virtual care for women in menopause.', why:'Millions of women get little support. Doctors on Nurtura are specialists.',
+   val:'$6M', round:'$900K pre-seed', risk:'Health rules differ by US state.', update:'First 500 patients. Looking for beta testers.', share:28, change:-4},
+  {id:'fieldsense', lead:'An agri-tech accelerator', name:'Fieldsense', color:'#9a9793', sector:'AI', stage:'Seed', radar:true, founders:'A farmer\'s son and an agronomist, building far from the usual tech hubs.', country:'Munich',
+   what:'AI that spots crop disease from drone photos.', why:'Farmers lose up to a fifth of crops to disease found too late.',
+   val:'$11M', round:'$2M seed', risk:'Hardware partners needed.', update:'Pilot with 40 farms in Bavaria.', share:39, change:+6},
+  {id:'veyra', lead:'A top-10 European seed fund', deal:true, closes:9, filled:78, name:'Veyra', color:'#f7ddd4', sector:'AI', stage:'Seed', radar:false, founders:'A fire-safety engineer and a machine-learning engineer who met at a city planning office.', country:'Stockholm',
+   what:'AI that checks building plans for fire-safety errors in minutes.', why:'Building approvals take months. Veyra cuts each check from weeks to hours.',
+   val:'$16M', round:'$3M seed', risk:'Every country has its own building codes.', update:'3 city councils are piloting it.', share:0, change:0},
+  {id:'kindred', lead:'An angel network of fintech operators', deal:true, closes:16, filled:41, name:'Kindred', color:'#e4cba9', sector:'Fintech', stage:'Pre-seed', radar:true, founders:'Two sisters who sent money to family abroad for 15 years. No banking background, 9,000 users already.', country:'Chicago',
+   what:'Shared savings accounts for families who send money home.', why:'Families abroad send billions home every year and pay high fees each time.',
+   val:'$7M', round:'$1.2M pre-seed', risk:'Money-transfer licences take time.', update:'9,000 users. Waiting on a licence in 2 more states.', share:0, change:0}
+];
+const DEALS = STARTUPS.filter(x=>x.deal);
+/* Edit these with real people and partners before showing it more widely. */
+const TEAM = [
+  {n:'Maide Altas', r:'Founder', d:'Interviewed 150+ women before building CapSi.', ex:false},
+  {n:'Investment lead', r:'Example profile', d:'Ex-VC partner, 10+ years in early-stage.', ex:true},
+  {n:'Legal and compliance', r:'Example profile', d:'Regulated partner, keeps every pool compliant.', ex:true}
+];
+const PARTNERS = [
+  {i:'zap', t:'Top accelerators', d:'Picks from leading programmes'},
+  {i:'trend', t:'Established VC funds', d:'We join rounds they lead'},
+  {i:'link', t:'Angel and university networks', d:'Seasoned angels, alumni groups'},
+  {i:'heart', t:'Women-led funds', d:'Known for finding hidden talent'}
+];
+const ASKS = [
+  {id:'a1', s:'medora', type:'call', icon:'phone', title:'30-min call: how do hospital buyers decide?', skill:'Health', credits:0.5, spots:3},
+  {id:'a2', s:'nurtura', type:'test', icon:'test', title:'Test our new app and share feedback', skill:'Any', credits:1, spots:12},
+  {id:'a3', s:'loopwear', type:'interview', icon:'msg', title:'User interview: how do you shop for kids\' clothes?', skill:'Any', credits:0.5, spots:8},
+  {id:'a4', s:'tallyo', type:'intro', icon:'link', title:'Intro to an accountant who works with freelancers', skill:'Finance', credits:1, spots:2},
+  {id:'a5', s:'gridnest', type:'call', icon:'phone', title:'Review our pricing page with a marketer\'s eye', skill:'Marketing', credits:0.5, spots:4},
+  {id:'a6', s:'fieldsense', type:'call', icon:'phone', title:'Advice on hiring our first engineers in Germany', skill:'HR', credits:1, spots:2}
+];
+const OFFERS = [
+  {id:'o1', icon:'legal', who:'Anna, lawyer', title:'30-min contract review', cost:0.5, cat:'Legal'},
+  {id:'o2', icon:'trend', who:'Mia, growth marketer', title:'LinkedIn and personal brand review', cost:0.5, cat:'Marketing'},
+  {id:'o3', icon:'brief', who:'Priya, HR director', title:'Salary negotiation prep', cost:1, cat:'Career'},
+  {id:'o4', icon:'msg', who:'Lena, VC associate', title:'Feedback on your own pitch deck', cost:1, cat:'Startup'},
+  {id:'o5', icon:'cal', who:'Sara, CEO of Tallyo', title:'Founder office hours (group)', cost:0.5, cat:'Founders'},
+  {id:'o6', icon:'gift', who:'CapSi', title:'Seat at the CapSi dinner in Berlin', cost:2, cat:'Events'}
+];
+const LESSONS = [
+  {id:'l1', icon:'pie', t:'What is a valuation?', m:2, body:'A valuation is what a startup is worth on paper when it raises money. If a startup is valued at $10M and you put in $100, you own 0.001%. Early valuations are guesses, so they move a lot.'},
+  {id:'l2', icon:'layers', t:'Why a portfolio beats one bet', m:3, body:'Most startups fail. A few grow very large. If you own small pieces of many, one big winner can make up for many losses. That is why CapSi spreads every plan across many startups.'},
+  {id:'l3', icon:'trend', t:'What dilution means', m:2, body:'When a startup raises more money, it issues new shares. Your share gets smaller, but if the company is worth more, your piece can still be worth more.'},
+  {id:'l4', icon:'shield', t:'The risks, honestly', m:3, body:'Startup investing is risky. You can lose the money you put in, and you usually cannot sell quickly. Only invest money you will not need for years.'},
+  {id:'l5', icon:'legal', t:'How much can I invest each year?', m:2, body:'US rules protect everyday investors with a yearly limit on startup investing.<br><br><b>If your income or your net worth is under $124,000:</b> you can invest the greater of $2,500 or 5% of the higher of the two each year.<br><br><b>If both are $124,000 or more:</b> you can invest 10% of the higher of the two, up to $124,000 a year.<br><br><b>Accredited investors</b> (over $200,000 income, or $300,000 with a partner, in each of the last 2 years; or over $1 million net worth without your home; or a Series 7, 65 or 82 license) have no limit.<br><br><b>CapSi adds one more step:</b> if you earn under $50,000, we show you a clear warning first, because losing this money could really hurt.<br><br><span style="color:var(--subtle);font-size:13px">These are the US crowdfunding rules, used as an example. CapSi\'s final rules depend on its legal setup.</span>'},
+  {id:'l6', icon:'cal', t:'How cash-out works (the 5% rule)', m:2, body:'Once a year you can ask to take out all or part of your money. Request by 31 Dec, and the value is fixed on that day.<br><br><b>Why there is a limit:</b> startups can\'t pay money back quickly. So each year CapSi pays out up to 5% of all members\' money. This protects the startups and everyone who stays invested.<br><br><b>Under 5%:</b> everyone who asked is paid in full by 31 Jan.<br><b>Over 5%:</b> everyone gets the same share now, and the rest in the next window(s), until you have all of it back.<br><br><b>Example:</b> if requests add up to 10% of the fund, you get half in January and the other half the year after.'}
+];
+const LEVELS = [{n:'Helper', at:0},{n:'Trusted Helper', at:3},{n:'Expert Circle', at:8}];
+const BADGES = [
+  {id:'first', n:'First help', icon:'heart'}, {id:'tester', n:'Beta tester', icon:'test'},
+  {id:'connector', n:'Connector', icon:'link'}, {id:'learner', n:'Learner', icon:'book'},
+  {id:'streak', n:'3-month streak', icon:'flame'}
+];
+
+/* ---------- state ---------- */
+const S = {
+  view:'intro', step:0, tab:'home', tbSeg:'earn',
+  lang:((navigator.language||'').toLowerCase().startsWith('de')?'de':'en'), notes:[], hinted:false, name:'', email:'', helperOnly:false, paused:false, redeem:null, rStep:0, rDraft:null, verified:false, vStep:0, vFrom:'onb', docType:'', income:'', worth:'', exp:[], riskOk:false, lowOk:false, accredited:'', accDraft:'', amount:100, themes:[], skills:[], time:'',
+  credits:1, hours:1, helped:[], booked:[], badges:['learner'], lessonsDone:['l1'],
+  events:[], fb:{}, fbSent:false, startedAt:Date.now()
+};
+const S0 = JSON.parse(JSON.stringify(S));
+const log = (e) => { S.events.push({e, t:Math.round((Date.now()-S.startedAt)/1000)}); };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = (n) => '$' + Math.round(n).toLocaleString('en-US');
+const st = (id) => STARTUPS.find(x => x.id === id);
+const level = () => { let l = LEVELS[0]; LEVELS.forEach(x => { if (S.hours >= x.at) l = x; }); return l; };
+const nextLevel = () => LEVELS.find(x => x.at > S.hours);
+
+/* ---------- render ---------- */
+function render(){
+  const sc = $('screen');
+  const showTabs = S.view === 'app';
+  $('tabs').classList.toggle('hidden', !showTabs);
+  
+  sc.classList.toggle('noTabs', !showTabs);
+  sc.innerHTML = S.view === 'about' ? vAbout() : S.view === 'intro' ? vIntro() : S.view === 'onb' ? vOnb() : S.view === 'verify' ? vVerify() : S.view === 'redeem' ? vRedeem() : S.view === 'ready' ? vReady() : vApp();
+  if (showTabs) renderTabs();
+}
+function topbar(){
+  const acts=[];
+  if (S.view==='intro') acts.push(langToggle());
+  else acts.push(`<button class="fbTop icon" aria-label="Start over" title="Start over" onclick="openRestart()">${I('rotate')}</button>`);
+  if (OWNER) acts.push(`<button class="fbTop" onclick="toggleResults()">${I('trend')}<span>${RESULTS?'Exit results':'Results'}</span></button>`);
+  else if (S.view==='app') acts.push(`<button class="fbTop" onclick="openFeedback()">${I('msg')}<span>Feedback</span></button>`);
+  return `<div class="top"><div class="brand">${LOGO}</div><div class="acts">${acts.join('')}</div></div>`;
+}
+
+function orb(size){ const r=[['--cream',1],['--sand',.77],['--taupe',.55],['--slate',.31]]; return `<div class="orb" style="width:${size}px;height:${size}px">${r.map(([c,f])=>`<i style="width:${size*f}px;height:${size*f}px;background:var(${c})"></i>`).join('')}</div>`; }
+function vIntro(){
+  return `${topbar()}
+  <div style="margin-top:18px">
+    <p class="eyebrow">Invest differently</p>
+    <h1 class="display" style="margin-top:14px">Startups from $50 a month</h1>
+    <p style="font-family:var(--serif);font-size:24px;line-height:1.15;margin-top:16px">Start small. Think big.</p>
+    <p class="sub" style="margin-top:12px">A savings plan for startups. We spread your money across many early-stage startups, picked for quality, not pedigree. We look for great founders the usual investors overlook. And you can help founders with your time, and earn credits for it.</p>
+  </div>
+  <div class="card" style="margin-top:22px">
+    <div class="row" style="align-items:flex-start"><span class="proto" style="flex-shrink:0">Test version</span><p class="small" style="margin-top:2px">No real money. The startups, people and numbers are made up. We want your honest opinion. Takes about 5 minutes.</p></div>
+  </div>
+  <div class="ctaBar">
+  <p class="q" style="margin-top:0">Your email</p>
+  <input type="email" id="em" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${esc(S.email)}" oninput="S.email=this.value.trim();document.getElementById('emErr').textContent=''">
+  <p class="small err" id="emErr"></p>
+  <button class="btn" style="margin-top:10px" onclick="startTest()">Start ${I('arrow')}</button>
+  <p class="small" style="text-align:center;margin-top:8px">We only use it to follow up on this test. Only the CapSi team can see it.</p></div>`;
+}
+
+function vOnb(){
+  const bar = `<div class="steps" style="margin-top:8px">${[0,1,2].map(i=>`<i class="${i<=S.step?'on':''}"></i>`).join('')}</div>`;
+  if (S.step === 0) return `${bar}
+    <h2>How much would you put in each month?</h2>
+    <p class="sub">You can change or pause this anytime.</p>
+    <div class="chips" style="margin-top:20px">${[50,100,250,500].map(a=>`<button class="chip amount ${S.amount===a?'on':''}" onclick="S.amount=${a};render()">$${a}</button>`).join('')}</div>
+    <div class="card" style="margin-top:20px">
+      <p class="small">In 12 months you would have invested</p>
+      <p class="big" style="margin-top:4px">${fmt(S.amount*12)}</p>
+      <p class="small" style="margin-top:6px">spread across 20+ startups. Startups are risky: you can lose money.</p>
+    </div>
+    ${helperCTA('onboarding')}
+    <div class="ctaBar"><button class="btn" onclick="S.helperOnly=false;S.step=1;log('amount:'+S.amount);render()">Continue</button></div>`;
+  if (S.step === 1) return `${bar}
+    <h2>What do you care about?</h2>
+    <p class="sub">We'll tilt your portfolio towards these themes. Pick any.</p>
+    <div class="chips" style="margin-top:20px">${['Under-the-radar founders','Climate','Health','Fintech','AI','Consumer','Education'].map(t=>`<button class="chip ${S.themes.includes(t)?'on':''}" onclick="tog('themes','${t}')">${t}</button>`).join('')}</div>
+    <div class="ctaBar"><button class="btn" onclick="S.step=2;log('themes:'+S.themes.join('|'));render()">Continue</button>
+    <div class="linkRow"><button class="btn link" onclick="S.step=0;render()">Back</button><button class="btn link muted" onclick="openRestart()">Start over</button></div></div>`;
+  return `${bar}
+    ${S.helperOnly?'<p class="eyebrow" style="margin-bottom:10px">Community membership</p><h2>Which skills can you offer founders?</h2>':'<h2>Could you help founders with your know-how?</h2>'}
+    <p class="sub">Founders ${S.helperOnly?'CapSi invests in':'in your portfolio'} post small asks: a 30-min call, a product test, an intro. Every hour of help earns you <b style="color:var(--accent-s)">1 CapSi Credit</b>, which you can spend on help from other women.</p>
+    <p class="q">Your expertise</p>
+    <div class="chips">${['Marketing','Legal','Finance','Product','Engineering','Health','Sales','HR','Design'].map(t=>`<button class="chip ${S.skills.includes(t)?'on':''}" onclick="tog('skills','${t}')">${t}</button>`).join('')}</div>
+    <p class="q">Time you could give per month</p>
+    <div class="chips">${['Not now','1 hour','2–3 hours','5+ hours'].map(t=>`<button class="chip ${S.time===t?'on':''}" onclick="S.time='${t}';render()">${t}</button>`).join('')}</div>
+    <div class="ctaBar"><button class="btn" onclick="log('skills:'+S.skills.join('|')+';time:'+S.time);S.helperOnly?go('ready'):startVerify('onb')">${S.helperOnly?'Join the community':'Create my plan'}</button>
+    <div class="linkRow"><button class="btn link" onclick="S.step=S.helperOnly?0:1;render()">Back</button><button class="btn link muted" onclick="openRestart()">Start over</button></div></div>`;
+}
+
+function dealsHTML(){
+  return `<div class="between" style="margin:22px 0 8px"><h3>Open deals</h3><span class="small">${DEALS.length} this month</span></div>
+  <div class="stack">${DEALS.map(x=>`<button class="card deal" onclick="openStartup('${x.id}')">
+    <div class="row" style="align-items:flex-start"><div class="avatar" style="background:${x.color}">${x.name[0]}</div>
+    <div class="grow" style="min-width:0"><div class="between"><b>${x.name}</b><span class="pill coral">${x.closes} days left</span></div>
+    <p class="small ellip">${x.sector} · ${x.stage} · ${x.round}</p>
+    <p class="small ellip" style="color:var(--ink2)">Lead: ${x.lead}</p>
+    <div class="progress light" style="margin-top:8px"><i style="width:${x.filled}%"></i></div></div></div></button>`).join('')}</div>`;
+}
+function openAbout(from){ S.aFrom=from||'start'; S.aStep=0; log('about_open:'+S.aFrom); go('about'); }
+function aStep(n){ S.aStep=n; log('about:'+n); $('screen').scrollTop=0; render(); }
+function aDone(skip){
+  log(skip?'about_skip:'+S.aStep:'about_done');
+  if (S.aFrom==='app'){ S.view='app'; $('screen').scrollTop=0; render(); return; }
+  go('onb');
+}
+function vAbout(){
+  const N=5, st=S.aStep||0;
+  const bar=`<div class="steps" style="margin-top:4px">${Array.from({length:N},(_,i)=>`<i class="${i<=st?'on':''}"></i>`).join('')}</div>`;
+  const back = st>0?`<button class="btn link" onclick="aStep(${st-1})">Back</button>`:'<span></span>';
+  const skip = `<button class="btn link muted" onclick="aDone(true)">${S.aFrom==='app'?'Close':'Skip intro'}</button>`;
+  const nav = (label)=>`<div class="ctaBar"><button class="btn" onclick="${st<N-1?'aStep('+(st+1)+')':'aDone()'}">${label} ${I('arrow')}</button><div class="linkRow">${back}${skip}</div></div>`;
+  const row=(i,t,d)=>`<div class="aRow"><div class="ic">${I(i)}</div><div><b>${t}</b><p class="small">${d}</p></div></div>`;
+  let h='';
+  if (st===0) h=`<p class="eyebrow">What CapSi is</p><h2 style="margin-top:10px">A savings plan for startups</h2>
+    <p class="sub">Like an ETF savings plan, but for young companies before they go public.</p>
+    <div class="stack" style="margin-top:16px">
+      ${row('layers','From $50 a month','Spread across 20+ startups, so one failure doesn\'t sink you.')}
+      ${row('shield','Not crowdfunding','Experienced investors check and select every deal for you.')}
+      ${row('pie','One line on the cap table','We pool everyone\'s money, so the best founders say yes to us.')}
+    </div>${nav('Who runs it')}`;
+  if (st===1) h=`<p class="eyebrow">Who runs it</p><h2 style="margin-top:10px">People who do this for a living</h2>
+    <div class="stack" style="margin-top:14px">${TEAM.map(p=>`<div class="aRow"><div class="avatar" style="background:var(--sand)">${p.ex?I('user'):p.n.split(' ').map(w=>w[0]).join('')}</div>
+      <div><div class="row" style="gap:6px"><b>${p.n}</b>${p.ex?'<span class="pill">Example</span>':''}</div><p class="small">${p.ex?'':p.r+' · '}${p.d}</p></div></div>`).join('')}</div>
+    <div class="card tint" style="margin-top:8px;padding:10px 14px"><b style="font-size:14px">A committee approves every deal</b>
+      <p class="small" style="margin-top:2px">VCs and women angels who invest their own money too.</p></div>${nav('Who we invest with')}`;
+  if (st===2) h=`<div class="between"><p class="eyebrow">Who we invest with</p><span class="pill">Names once signed</span></div><h2 style="margin-top:10px">We never invest alone</h2>
+    <p class="sub">Every startup has a lead investor who did the full checks. We join on the same terms.</p>
+    <div class="pgrid">${PARTNERS.map(p=>`<div class="pcell"><div class="row" style="gap:6px">${I(p.i)}<b>${p.t}</b></div><p class="small">${p.d}</p></div>`).join('')}</div>
+    <div class="card" style="margin-top:10px;padding:12px 14px"><div class="row" style="align-items:flex-start;gap:10px">${I('shield')}<p class="small" style="color:var(--ink2)"><b>Protected:</b> a licensed bank holds your money, not CapSi. Each pool is audited yearly.</p></div></div>${nav('Where my money goes')}`;
+  if (st===3) h=`<p class="eyebrow">Where your money goes</p><h2 style="margin-top:10px">You see every startup you own</h2>
+    <div class="card" style="margin-top:12px;padding:14px"><div class="between"><b style="font-size:14px">Pool 1 · Winter 2026</b><span class="pill">Example</span></div>
+      <p class="small" style="margin-top:4px">8–12 startups · pre-seed to Series A</p>
+      <div class="split" style="margin-top:10px"><i style="width:70%"></i><i style="width:30%"></i></div>
+      <div class="between small" style="margin-top:6px"><span>Europe 70%</span><span>US 30%</span></div>
+      <p class="small" style="margin-top:8px;color:var(--ink2)">AI · Health · Climate · Fintech · Consumer</p></div>
+    <p class="q" style="margin-top:12px">For every startup you'll see</p>
+    <div class="ticks">${['The founders and why we invested','Round, valuation and lead investor','The main risk, in plain words','Founder updates every quarter','All fees in one place'].map(t=>`<p>${I('check')}${t}</p>`).join('')}</div>${nav('What you get')}`;
+  if (st===4) h=`<p class="eyebrow">What we want to give you</p><h2 style="margin-top:10px">Built with women investors</h2>
+    <div class="stack" style="margin-top:14px">
+      ${row('trend','Returns first','Quality, not pedigree. Many overlooked founders are women.')}
+      ${row('book','Know what you own','Plain reports, short lessons, live Q&As with VCs.')}
+      ${row('heart','A circle of women investors','Learn together, help founders, earn credits.')}
+      ${row('rotate','A clear way out','Cash out once a year, with rules you see upfront.')}
+    </div>${nav(S.aFrom==='app'?'Back to the app':'Set up my plan')}`;
+  return topbar()+bar+`<div class="aBody">${h}</div>`;
+}
+function vReady(){
+  setTimeout(()=>confetti(), 200);
+  return `<div style="text-align:center;margin-top:36px">
+    ${orb(150)}<div style="height:26px"></div><p class="eyebrow">Welcome to CapSi</p><div style="height:10px"></div>
+    <h2>${S.helperOnly ? (S.name?esc(S.name)+', you':'You')+'\'re in the CapSi community.' : (S.name ? esc(S.name)+', your' : 'Your')+' plan is ready.'}</h2>
+    <p class="sub" style="margin-top:8px">${S.helperOnly?'Help founders with your skills, earn CapSi Credits, and spend them on help from other women. No money needed.':'$'+S.amount+' a month into a diversified startup portfolio.'}</p>
+    <div class="card tint" style="margin-top:26px;text-align:left">
+      <div class="row">${I('gift')}<p style="font-size:14px"><b>Welcome gift:</b> 1 CapSi Credit to try the Time Bank.</p></div>
+    </div>
+    ${S.verified||S.helperOnly?'':`<p class="small" style="margin-top:14px;color:var(--ink2)">Remember to verify your identity before your first investment on 1 Dec.</p>`}
+    ${S.helperOnly?'':'<p class="small" style="margin-top:20px">To keep the test realistic, the app now shows what your plan could look like after 12 months.</p>'}
+    <div class="ctaBar" style="text-align:left"><button class="btn" onclick="${S.helperOnly?"S.tab='bank';go('app')":"go('app')"}">${S.helperOnly?'See founders who need help':'See my portfolio'} ${I('arrow')}</button></div>
+  </div>`;
+}
+
+function vApp(){
+  return topbar() + (S.tab==='home' ? vHome() : S.tab==='bank' ? vBank() : S.tab==='learn' ? vLearn() : vMe());
+}
+
+function sparkline(){
+  const pts = [0,1,2,3,4,5,6,7,8,9,10,11,12].map(m => S.amount*m*(1 + 0.012*m + (m%3===0?0.01:0)));
+  const max = pts[pts.length-1] || 1, w=350, h=80;
+  const d = pts.map((v,i)=>`${i===0?'M':'L'}${(i/12*w).toFixed(1)},${(h-6-(v/max)*(h-14)).toFixed(1)}`).join(' ');
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path d="${d} L${w},${h} L0,${h}Z" fill="#f3e7d6"/><path d="${d}" fill="none" stroke="#181410" stroke-width="1.5"/></svg>`;
+}
+function vHome(){
+  if (S.helperOnly) return vHomeHelper();
+  const invested = S.amount*12, value = invested*1.08;
+  return `<p class="sub">${S.name?'Hi '+esc(S.name)+' ·':''} Month 12 (example)</p>
+  <p class="big" style="margin-top:2px">${fmt(value)}</p>
+  <p class="small">${fmt(invested)} invested · <span style="color:var(--green);font-weight:700">+${fmt(value-invested)} on paper</span></p>
+  ${sparkline()}
+  <div class="card between" style="margin-top:6px">
+    <div><p class="small">Your plan</p><p style="font-weight:700;font-size:18px">${S.paused?'Paused':'$'+S.amount+' / month'}</p></div>
+    <div style="text-align:right"><button class="edit" onclick="setTab('me');setTimeout(openEditPlan,50)">Change</button></div>
+  </div>
+  ${redeemStatusCard()}
+  ${S.verified?'':`<button class="card between" style="margin-top:12px;width:100%;text-align:left;border-color:var(--line3)" onclick="startVerify('app')"><div class="row">${I('shield')}<div><b style="font-size:14px;font-weight:600">Verify your identity</b><p class="small">Needed before your first investment</p></div></div>${I('arrow')}</button>`}
+  <div class="card tint" style="margin-top:12px;cursor:pointer" onclick="setTab('bank')">
+    <div class="between"><div class="row">${I('clock')}<div><b style="font-size:14px">3 founders need your help</b><p class="small">Earn credits in the Time Bank</p></div></div>${I('arrow')}</div>
+  </div>
+  ${dealsHTML()}
+  <div class="between" style="margin:22px 0 4px"><h3>Your startups</h3><span class="small">22 in total · 6 shown</span></div>
+  <div class="list">${STARTUPS.filter(x=>!x.deal).map(x=>`
+    <button onclick="openStartup('${x.id}')">
+      <div class="avatar" style="background:${x.color}">${x.name[0]}</div>
+      <div class="grow"><div class="row" style="gap:6px"><b>${x.name}</b>${x.radar?'<span class="pill warm">Under the radar</span>':''}</div>
+      <p class="small ellip">${x.sector} · ${x.stage} · ${x.country}</p></div>
+      <div style="text-align:right"><b>$${x.share}</b><p class="small" style="color:${x.change>0?'var(--green)':x.change<0?'var(--accent-s)':'var(--subtle)'}">${x.change>0?'+':''}${x.change}%</p></div>
+    </button>`).join('')}</div>
+  <p class="small" style="margin-top:14px">Sample portfolio for testing. Values are examples only.</p>`;
+}
+
+function vBank(){
+  const l = level(), nl = nextLevel();
+  const pct = nl ? Math.min(100, ((S.hours - l.at) / (nl.at - l.at)) * 100) : 100;
+  const myAsks = ASKS.filter(a => !S.helped.includes(a.id));
+  const sorted = [...myAsks].sort((a,b)=> (S.skills.includes(b.skill)?1:0) - (S.skills.includes(a.skill)?1:0));
+  return `<h2>Time Bank</h2>
+  <p class="sub">Help a founder today. Get help tomorrow.</p>
+  <div class="darkcard" style="margin-top:16px">
+    <div class="between">
+      <div><p class="lbl">Your credits</p><p class="big" style="color:var(--ink-inv);margin-top:4px">${fmtC(S.credits)}</p></div>
+      <div style="text-align:right"><p class="lbl">Level</p><p style="font-family:var(--serif);font-size:20px;color:var(--peach);margin-top:6px">${l.n}</p></div>
+    </div>
+    <div class="progress" style="margin-top:14px"><i style="width:${pct}%"></i></div>
+    <p style="font-size:12px;opacity:.75;margin-top:8px">${nl ? `${fmtC(nl.at - S.hours)} more hours of help to reach <b>${nl.n}</b>` : 'Top level reached'} · ${fmtC(S.hours)} ${S.hours===1?'hour':'hours'} given</p>
+  </div>
+  <p class="small" style="margin-top:8px">1 hour of help = 1 credit, whoever gives it. Credits can't be cashed out and don't change your investment.</p>
+  <div class="seg"><button class="${S.tbSeg==='earn'?'on':''}" onclick="S.tbSeg='earn';log('seg:earn');render()">Earn</button><button class="${S.tbSeg==='spend'?'on':''}" onclick="S.tbSeg='spend';log('seg:spend');render()">Spend</button><button class="${S.tbSeg==='board'?'on':''}" onclick="S.tbSeg='board';log('seg:board');render()">Community</button></div>
+  ${S.tbSeg==='earn' ? `
+    <p class="small" style="margin-bottom:10px">Asks from founders ${S.helperOnly?'CapSi invests in':'in your portfolio'}${S.skills.length?', matched to your skills first':''}.</p>
+    <div class="stack">${sorted.map(a=>{const x=st(a.s);const match=S.skills.includes(a.skill);return `
+      <div class="card ask">
+        <div class="row" style="align-items:flex-start">
+          <div class="avatar" style="background:${x.color};width:36px;height:36px;font-size:13px;border-radius:10px">${x.name[0]}</div>
+          <div class="grow"><b style="font-size:14px;line-height:1.35;display:block">${a.title}</b>
+          <p class="meta">${x.name} · ${x.sector} · ${a.spots} spots left</p>
+          <div class="row" style="gap:6px;margin-top:8px"><span class="pill coral">+${fmtC(a.credits)} credit</span>${match?'<span class="pill green">Matches your skills</span>':''}</div></div>
+        </div>
+        <button class="btn sm" style="margin-top:12px;width:100%" onclick="openAsk('${a.id}')">I can help</button>
+      </div>`}).join('') || '<div class="card"><p class="sub">You answered every ask. New ones come every week.</p></div>'}</div>` : ''}
+  ${S.tbSeg==='spend' ? `
+    <p class="small" style="margin-bottom:10px">Help offered by other women in the CapSi community.</p>
+    <div class="stack">${OFFERS.map(o=>{const booked=S.booked.includes(o.id);return `
+      <div class="card"><div class="row" style="align-items:flex-start">
+        <div class="avatar" style="background:var(--cream);color:var(--ink)">${I(o.icon)}</div>
+        <div class="grow"><b style="font-size:14px">${o.title}</b><p class="small">${o.who} · ${o.cat}</p></div>
+        <span class="pill">${fmtC(o.cost)} cr</span></div>
+        <button class="btn sm ${booked?'ghost':''}" style="margin-top:12px;width:100%" ${booked?'disabled':''} onclick="openOffer('${o.id}')">${booked?'Requested':'Request'}</button>
+      </div>`}).join('')}</div>` : ''}
+  ${S.tbSeg==='board' ? `
+    <div class="card tint"><p class="small">This month, CapSi members gave</p><p class="big">1,240 hours</p><p class="small">to 86 startups</p></div>
+    <h3 style="margin:18px 0 8px">Top helpers this month</h3>
+    <div class="card">
+      ${[['Julia M.',14],['Aisha K.',11],['Marta S.',9],['Hannah L.',7]].map((r,i)=>`<div class="lb"><span class="n">${i+1}</span><div class="avatar" style="width:32px;height:32px;font-size:12px;border-radius:50%;background:${['#f0d3b8','#e4cba9','#f3e7d6','#b7a68f'][i]}">${r[0][0]}</div><span class="grow">${r[0]}</span><b>${r[1]} h</b></div>`).join('')}
+      <div class="lb me"><span class="n">–</span><div class="avatar" style="width:32px;height:32px;font-size:13px;border-radius:50%;background:var(--surface-inverse);color:var(--ink-inv)">${(S.name||'You')[0].toUpperCase()}</div><span class="grow">${S.name?esc(S.name):'You'}</span><b>${fmtC(S.hours)} h</b></div>
+    </div>
+    <p class="small" style="margin-top:8px">Showing your name here would be optional.</p>
+    <h3 style="margin:20px 0 10px">Your badges</h3>
+    <div class="badges">${BADGES.map(b=>`<div class="badge ${S.badges.includes(b.id)?'on':''}"><div class="b">${I(b.icon)}</div>${b.n}</div>`).join('')}</div>` : ''}`;
+}
+const fmtC = (n) => (Math.round(n*10)/10).toString().replace(/\.0$/,'');
+
+function vLearn(){
+  return `<h2>Venture Academy</h2>
+  <p class="sub">Short lessons on how startup investing works. No jargon.</p>
+  <button class="card between" style="margin-top:16px;width:100%;text-align:left" onclick="openAbout('app')"><div class="row">${I('shield')}<div><b style="font-size:14px">About CapSi</b><p class="small">Who runs it, who we invest with, where your money goes</p></div></div>${I('arrow')}</button>
+  <div class="card tint" style="margin-top:16px">
+    <span class="pill coral">LIVE · THU 6 PM</span>
+    <h3 style="margin-top:10px">Startup Investing 101</h3>
+    <p class="small">45-min webinar with a VC partner and a founder. Free.</p>
+    <button class="btn sm" style="margin-top:12px" onclick="toast('You\\'re on the list for Thursday','✓');log('webinar')">Save my seat</button>
+  </div>
+  <div class="between" style="margin:22px 0 10px"><h3>Lessons</h3><span class="small">${S.lessonsDone.length} of ${LESSONS.length} done</span></div>
+  <div class="stack">${LESSONS.map(l=>`<button class="card lesson ${S.lessonsDone.includes(l.id)?'done':''}" style="width:100%;text-align:left" onclick="openLesson('${l.id}')">
+    <div class="ic">${I(S.lessonsDone.includes(l.id)?'check':l.icon)}</div>
+    <div class="grow"><b style="font-size:14px">${l.t}</b><p class="small">${l.m} min read</p></div>${I('arrow')}</button>`).join('')}</div>`;
+}
+
+function vMe(){
+  return `<p class="eyebrow">Your account</p>
+  <h2 style="margin-top:10px">${S.name?esc(S.name):'Your profile'}</h2>
+  <p class="sub">${level().n} · ${fmtC(S.hours)} ${S.hours===1?'hour':'hours'} given</p>
+  ${S.helperOnly?`<div class="secHead"><h3>Membership</h3><button class="edit" onclick="startInvesting()">Start investing</button></div>
+  <div class="card" style="padding:4px 18px">
+    <div class="kv"><span>Type</span><b>Community member (no investing)</b></div>
+    <div class="kv"><span>Credits</span><b>${fmtC(S.credits)}</b></div>
+    <div class="kv"><span>You can switch</span><b>Invest from $50 a month any time</b></div>
+  </div>`:`<div class="secHead"><h3>Your plan</h3><button class="edit" onclick="openEditPlan()">Change plan</button></div>
+  <div class="card" style="padding:4px 18px">
+    <div class="kv"><span>Monthly amount</span><b>${S.paused?'<span class="pill warm">Paused</span>':'$'+S.amount}</b></div>
+    <div class="kv"><span>Themes</span><b>${S.themes.join(', ')||'Balanced'}</b></div>
+    <div class="kv"><span>Next investment</span><b>${S.paused?'—':'1 Dec'}</b></div>
+  </div>
+  <button class="edit" style="margin-top:10px" onclick="becomeHelper('me')">Switch to community only (stop investing)</button>`}
+  <div class="secHead"><h3>Personal details</h3><button class="edit" onclick="openEditDetails()">Edit</button></div>
+  <div class="card" style="padding:4px 18px">
+    <div class="kv"><span>Name</span><b>${S.name?esc(S.name):'Not set'}</b></div>
+    <div class="kv"><span>Email</span><b>${S.email?esc(S.email):'Not set'}</b></div>
+    <div class="kv"><span>Expertise</span><b>${S.skills.join(', ')||'Not set'}</b></div>
+    <div class="kv"><span>Time for founders</span><b>${S.time||'Not set'}</b></div>
+  </div>
+  ${S.helperOnly?'':`<div class="secHead"><h3>Verification</h3>${S.verified?`<button class="edit" onclick="startVerify('app',3)">Update</button>`:''}</div>
+  <div class="card" style="padding:4px 18px">
+    <div class="kv"><span>Identity</span><b>${S.verified?'<span class="pill green">Verified</span>':`<button class="edit" onclick="startVerify('app')">Verify now</button>`}</b></div>
+    <div class="kv"><span>Yearly income</span><b>${S.income||'—'}</b></div>
+    <div class="kv"><span>Savings and investments</span><b>${S.worth||'—'}</b></div>
+    <div class="kv"><span>Accredited investor</span><b>${S.accredited?'<span class="pill green">Confirmed</span>':(S.income?`<button class="edit" onclick="openAccred()">Check</button>`:'—')}</b></div>
+    <div class="kv"><span>Yearly investment limit</span><b>${!investLimit()?'—':investLimit().accredited?'No legal limit (accredited)':fmt(investLimit().limit)+' (about $'+investLimit().maxMonthly+'/month)'}</b></div>
+  </div>
+  <div class="secHead"><h3>Cash out</h3>${S.redeem?'':`<button class="edit" onclick="startRedeem()">Request cash-out</button>`}</div>
+  ${S.redeem?redeemStatusCard():`<div class="card" style="padding:4px 18px">
+    <div class="kv"><span>Cash-out window</span><b>Once a year</b></div>
+    <div class="kv"><span>Next payout</span><b>By 31 Jan 2027</b></div>
+    <div class="kv"><span>Request by</span><b>31 Dec 2026</b></div>
+    <div class="kv"><span>Yearly limit</span><b>5% of the fund, rest paid next window</b></div>
+  </div>`}
+  <div class="secHead"><h3>Fees</h3></div>
+  <div class="card" style="padding:4px 18px">
+    <div class="kv"><span>On each deposit</span><b>2%</b></div>
+    <div class="kv"><span>Yearly management</span><b>1.5%</b></div>
+  </div>`}
+  <div class="secHead"><h3>Language</h3>${langToggle()}</div>
+  <h3 style="margin:22px 0 10px">Badges</h3>
+  <div class="badges">${BADGES.map(b=>`<div class="badge ${S.badges.includes(b.id)?'on':''}"><div class="b">${I(b.icon)}</div>${b.n}</div>`).join('')}</div>
+  <button class="btn" style="margin-top:24px" onclick="openFeedback()">${I('msg')} Give feedback on this app</button>
+  <button class="btn ghost" style="margin-top:10px" onclick="openRestart()">${I('rotate')} Start over from the beginning</button>`;
+}
+
+/* ---------- helper-only membership (no investing) ---------- */
+function becomeHelper(from){
+  S.helperOnly=true; S.paused=false; log('helper_only:'+from);
+  if (S.view==='onb'){ S.step=2; render(); return; }
+  if (S.view==='verify'){ S.view = S.vFrom==='onb' ? 'ready' : 'app'; S.tab='home'; $('screen').scrollTop=0; render(); return; }
+  closeSheet(); S.view='app'; S.tab='home'; render(); setTimeout(()=>toast('You are now a community member','✓'),250);
+}
+function startInvesting(){
+  S.helperOnly=false; if (S.amount<50) S.amount=50; log('helper_to_investor');
+  if (S.verified) { render(); toast('Your plan starts at $'+S.amount+' a month','✓'); }
+  else startVerify('app');
+}
+function helperCTA(from){
+  return `<button class="card between" style="width:100%;text-align:left;margin-top:12px" onclick="becomeHelper('${from}')">
+    <div class="row" style="align-items:flex-start">${I('heart')}<div><b style="font-size:14px;font-weight:600">Not ready to invest? Join the community</b>
+    <p class="small" style="margin-top:2px">Help founders with your skills, earn CapSi Credits and spend them on help from other women. No money needed.</p></div></div>${I('arrow')}</button>`;
+}
+function vHomeHelper(){
+  return `<p class="eyebrow">Community membership</p>
+  <h2 style="margin-top:10px">${S.name?esc(S.name)+', you':'You'}'re a CapSi community member</h2>
+  <p class="sub">You don't invest money. You help founders with your skills, earn credits, and use them for help from other women.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+    <div class="card"><p class="small">Your credits</p><p class="big" style="font-size:32px">${fmtC(S.credits)}</p></div>
+    <div class="card"><p class="small">Hours given</p><p class="big" style="font-size:32px">${fmtC(S.hours)}</p></div>
+  </div>
+  <div class="card tint" style="margin-top:12px;cursor:pointer" onclick="setTab('bank')">
+    <div class="between"><div class="row">${I('clock')}<div><b style="font-size:14px">3 founders need your help</b><p class="small">Earn credits in the Time Bank</p></div></div>${I('arrow')}</div>
+  </div>
+  <div class="between" style="margin:22px 0 4px"><h3>Startups you can help</h3><span class="small">6 shown</span></div>
+  <div class="list">${STARTUPS.filter(x=>!x.deal).map(x=>`
+    <button onclick="openStartup('${x.id}')">
+      <div class="avatar" style="background:${x.color}">${x.name[0]}</div>
+      <div class="grow"><div class="row" style="gap:6px"><b>${x.name}</b>${x.radar?'<span class="pill warm">Under the radar</span>':''}</div>
+      <p class="small ellip">${x.sector} · ${x.stage} · ${x.country}</p></div>${I('arrow')}
+    </button>`).join('')}</div>
+  <div class="card" style="margin-top:18px">
+    <b style="font-size:14px;font-weight:600">Want to invest later?</b>
+    <p class="small" style="margin-top:4px">You can start a plan from $50 a month whenever you're ready. Your credits and badges stay.</p>
+    <button class="btn ghost sm" style="margin-top:12px" onclick="startInvesting()">Start investing</button>
+  </div>
+  <p class="small" style="margin-top:14px">Sample startups for testing.</p>`;
+}
+
+/* ---------- accredited-investor check (simulated) ---------- */
+const ACC_PATHS=[
+  ['income','Income','I earned over $200,000 in each of the last 2 years (or over $300,000 together with my spouse or partner), and expect the same this year.'],
+  ['worth','Net worth','My net worth is over $1 million, alone or with my spouse or partner, not counting my home.'],
+  ['license','License','I hold a Series 7, 65 or 82 license in good standing.'],
+  ['none','None','None of these apply to me.']
+];
+const ACC_PROOF={income:'Tax returns or W-2s for the last 2 years, or a letter from your accountant or lawyer',worth:'Recent bank and brokerage statements, or a letter from your accountant or lawyer',license:'A quick check of your license number in FINRA BrokerCheck'};
+function openAccred(){ S.accDraft=S.accDraft||''; log('accred_open'); openSheet(accredHTML(),'accred'); }
+function accredHTML(){
+  const d=S.accDraft;
+  return `<p class="eyebrow">Accredited investor check</p>
+  <h2 style="margin-top:10px">Are you an accredited investor?</h2>
+  <p class="sub">US rules have no yearly limit for accredited investors. You qualify if one of these is true.</p>
+  <div class="stack" style="margin-top:16px">${ACC_PATHS.map(([k,l,t])=>`
+    <button class="card row" style="width:100%;text-align:left;align-items:flex-start;${d===k?'border-color:var(--surface-inverse)':''}" onclick="S.accDraft='${k}';sheetHTML(accredHTML())">
+      <span style="width:20px;height:20px;border-radius:50%;border:1px solid var(--line3);flex-shrink:0;margin-top:1px;${d===k?'border:6px solid var(--surface-inverse)':''}"></span>
+      <span><b style="font-size:14px;font-weight:600">${l}</b><span class="small" style="display:block;margin-top:3px;color:var(--ink2)">${t}</span></span>
+    </button>`).join('')}</div>
+  ${d && d!=='none' ? `<div class="card tint" style="margin-top:14px">
+      <p class="small" style="color:var(--ink2)"><b>How we'd confirm it:</b> ${ACC_PROOF[d]}. Depending on CapSi's legal setup, we may need this proof before lifting your limit.</p>
+      <p class="small" style="margin-top:6px">Test version: nothing is uploaded.</p></div>
+    <button class="btn" style="margin-top:16px" onclick="accredConfirm()">Simulate confirmation</button>`
+  : d==='none' ? `<div class="card" style="margin-top:14px"><p class="small" style="color:var(--ink2)">No problem. Most members aren't accredited. Your yearly limit stays as it is, and you can still start with $50 a month.</p></div>
+    <button class="btn" style="margin-top:16px" onclick="log('accred_none');closeSheet()">OK</button>` : ''}
+  <button class="btn link" style="margin-top:4px" onclick="closeSheet()">Cancel</button>`;
+}
+function accredConfirm(){
+  S.accredited=S.accDraft; log('accred_yes:'+S.accDraft); closeSheet(); render();
+  setTimeout(()=>toast('Confirmed: no yearly limit applies','✓'),250);
+}
+
+/* ---------- yearly investment limit (modelled on US Reg CF) ---------- */
+const BAND_LOW={'Under $50k':0,'$50k–124k':50000,'$124k–200k':124000,'$200k+':200000,'$124k–1M':124000,'$1M+':1000000,'Prefer not to say':0};
+function investLimit(){
+  if (S.accredited) return { limit: Infinity, maxMonthly: Infinity, rule:'accredited', accredited:true };
+  if (!S.income || !S.worth) return null;
+  const i=BAND_LOW[S.income], n=BAND_LOW[S.worth], g=Math.max(i,n);
+  const both = i>=124000 && n>=124000;
+  const limit = both ? Math.min(124000, 0.10*g) : Math.max(2500, 0.05*g);
+  return { limit, maxMonthly: Math.max(50, Math.floor(limit/12/10)*10), rule: both?'10%':'5%',
+           mayBeAccredited: S.income==='$200k+' || S.worth==='$1M+', unknown: S.income==='Prefer not to say'||S.worth==='Prefer not to say' };
+}
+const lowIncome = () => S.income==='Under $50k';
+const overLimit = () => { const L=investLimit(); return !!L && !L.accredited && S.amount*12 > L.limit; };
+function lowerToLimit(){ const L=investLimit(); if(!L) return; S.amount=L.maxMonthly; log('limit_lowered:'+S.amount); render(); toast(`Plan lowered to $${S.amount} a month`,'✓'); }
+function limitCardHTML(){
+  const L=investLimit(); if (!L) return '';
+  if (L.accredited) return `<div class="card" style="margin-top:18px">
+    <div class="between"><b style="font-size:14px;font-weight:600">Your yearly investment limit</b><span class="pill green">Accredited</span></div>
+    <p class="big" style="font-size:30px;margin-top:8px">No legal limit</p>
+    <p class="small" style="margin-top:6px;color:var(--ink2)">You're confirmed as an accredited investor (test version). Startups are still risky: only invest what you can afford to lose.</p>
+    <button class="edit" style="margin-top:10px" onclick="openLesson('l5')">How limits work</button></div>`;
+  const yearly=S.amount*12, over=yearly>L.limit;
+  if (over && !S._limitLogged){ S._limitLogged=true; log('limit_over:'+S.amount); }
+  return `<div class="card" style="margin-top:18px;${over?'border-color:var(--accent-s)':''}">
+    <div class="between"><b style="font-size:14px;font-weight:600">Your yearly investment limit</b><span class="pill warm">Example rules</span></div>
+    <p class="big" style="font-size:30px;margin-top:8px">${fmt(L.limit)}<span class="small" style="font-family:var(--sans)"> a year · about $${L.maxMonthly}/month</span></p>
+    <p class="small" style="margin-top:6px;color:var(--ink2)">${L.rule==='5%'
+      ? 'Because your income or savings are under $124,000, you can invest the greater of $2,500 or 5% of the higher of the two each year.'
+      : 'Because your income and savings are both $124,000 or more, you can invest 10% of the higher of the two each year, up to $124,000.'}${L.unknown?' Without your numbers, we use the lowest limit.':''}</p>
+    <div class="between" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+      <span class="small" style="color:var(--ink2)">Your plan: $${S.amount}/month = ${fmt(yearly)} a year</span>
+      ${over?'<span class="pill coral">Above limit</span>':'<span class="pill green">Within limit</span>'}
+    </div>
+    ${over?`<button class="btn" style="margin-top:12px" onclick="lowerToLimit()">Lower my plan to $${L.maxMonthly} a month</button>`:''}
+    <div class="between" style="margin-top:12px;gap:8px">
+      <button class="edit" onclick="openAccred()">${L.mayBeAccredited?'You may be accredited: check now':'Accredited investor?'}</button>
+      <button class="edit" onclick="openLesson('l5')">How limits work</button>
+    </div>
+  </div>`;
+}
+function lowIncomeHTML(){
+  if (!lowIncome()) return '';
+  return `<div class="card" style="margin-top:12px;background:var(--accent-soft);border-color:transparent">
+    <b style="font-size:14px;font-weight:600;color:var(--accent-s)">Please read: you could lose all of this money</b>
+    <p class="small" style="margin-top:6px;color:var(--ink2)">Most startups fail, and the money is hard to get back for years. With an income under $50,000, losing it could really hurt. Only invest money you won't need, and keep an emergency fund first. Starting with $50 a month is a good way to learn.</p>
+  </div>
+  <button class="card row" style="margin-top:10px;width:100%;text-align:left;align-items:flex-start;${S.lowOk?'border-color:var(--surface-inverse)':''}" onclick="S.lowOk=!S.lowOk;log('low_income_ack:'+S.lowOk);render()">
+    <span style="width:22px;height:22px;border-radius:6px;border:1px solid var(--line3);display:flex;align-items:center;justify-content:center;flex-shrink:0;${S.lowOk?'background:var(--surface-inverse);color:var(--ink-inv);border-color:var(--surface-inverse)':''}">${S.lowOk?I('check'):''}</span>
+    <span style="font-size:14px;line-height:1.45">I've read this warning, and I can afford to lose the money I invest.</span>
+  </button>
+  ${helperCTA('low_income')}`;
+}
+
+/* ---------- verification (simulated KYC + investor profile) ---------- */
+const INCOMES=['Under $50k','$50k–124k','$124k–200k','$200k+','Prefer not to say'];
+const WORTHS=['Under $50k','$50k–124k','$124k–1M','$1M+','Prefer not to say'];
+const EXPS=['I invest in ETFs or stocks','I\'ve invested in a startup before','I\'m new to investing'];
+function startVerify(from, step){ S.vFrom=from; S.vStep=step||0; S.view='verify'; log('verify_start:'+from); $('screen').scrollTop=0; render(); }
+function vStep(n){ S.vStep=n; log('verify_step:'+n); $('screen').scrollTop=0; render(); }
+function verifyLater(){ log('verify_later'); S.view = S.vFrom==='onb' ? 'ready' : 'app'; $('screen').scrollTop=0; render(); }
+function verifyDone(){
+  S.verified=true; log('verify_done;income:'+(S.income||'-')+';worth:'+(S.worth||'-')+';exp:'+(S.exp||[]).join('|'));
+  S.view = S.vFrom==='onb' ? 'ready' : 'app'; $('screen').scrollTop=0; render();
+  if (S.vFrom!=='onb') setTimeout(()=>toast('You\'re verified','✓'),250);
+}
+function vVerify(){
+  const bar = `<div class="steps">${[1,2,3].map(i=>`<i class="${i<=Math.max(1,S.vStep)?'on':''}"></i>`).join('')}</div>`;
+  if (S.vStep===0) return `${topbar()}
+    <p class="eyebrow">Before your first investment</p>
+    <h2 style="margin-top:10px">Let's check it's really you</h2>
+    <p class="sub">Every regulated investment app has to do this. It protects you and the other members.</p>
+    <div class="card" style="margin-top:18px;padding:4px 18px">
+      <div class="kv" style="align-items:flex-start"><span style="display:flex;gap:10px;color:var(--ink)">${I('user')} <b style="text-align:left">ID check</b></span><b style="font-weight:400;color:var(--muted)">About 2 min</b></div>
+      <div class="kv" style="align-items:flex-start"><span style="display:flex;gap:10px;color:var(--ink)">${I('brief')} <b style="text-align:left">Income and experience</b></span><b style="font-weight:400;color:var(--muted)">4 questions</b></div>
+      <div class="kv" style="align-items:flex-start"><span style="display:flex;gap:10px;color:var(--ink)">${I('shield')} <b style="text-align:left">Risk check</b></span><b style="font-weight:400;color:var(--muted)">1 tick</b></div>
+    </div>
+    <div class="card tint" style="margin-top:12px"><p class="small" style="color:var(--ink2)"><b>Test version:</b> nothing is uploaded or checked. You'll just see how it would work. Please don't enter real ID numbers.</p></div>
+    ${helperCTA('verify_intro')}
+    <div class="ctaBar"><button class="btn" onclick="vStep(1)">Start verification</button>
+    <button class="btn link" onclick="verifyLater()">Do this later</button></div>`;
+  if (S.vStep===1) return `${bar}
+    <p class="eyebrow">Step 1 of 3 · ID check</p>
+    <h2 style="margin-top:10px">Which ID will you use?</h2>
+    <div class="stack" style="margin-top:16px">${['Passport','National ID card','Driver\'s licence'].map(d=>`<button class="card between" style="width:100%;text-align:left;${S.docType===d?'border-color:var(--surface-inverse)':''}" onclick="S.docType='${d}';render()"><span style="font-weight:500">${d}</span><span class="switch ${S.docType===d?'on':''}" style="transform:scale(.8)"></span></button>`).join('')}</div>
+    <div class="card" style="margin-top:16px;text-align:center;padding:26px 18px">
+      ${orb(90)}<p style="font-family:var(--serif);font-size:20px;margin-top:14px">Photo of your ID + a selfie</p>
+      <p class="small" style="margin-top:6px">In the real app your camera opens here. A licensed partner checks the photo in about a minute.</p>
+    </div>
+    <div class="ctaBar"><button class="btn" ${S.docType?'':'disabled'} onclick="vStep(2);setTimeout(()=>{ if(S.view==='verify'&&S.vStep===2) vStep(3); },1800)">Simulate ID check</button>
+    <button class="btn link" onclick="verifyLater()">Do this later</button></div>`;
+  if (S.vStep===2) return `${bar}<div style="text-align:center;margin-top:110px">${orb(140)}
+    <p class="eyebrow" style="margin-top:26px">Checking your ID</p><p class="sub" style="margin-top:8px">This usually takes under a minute.</p></div>`;
+  const ok = S.income && S.worth && S.riskOk && !overLimit() && (!lowIncome() || S.lowOk);
+  return `${bar}
+    <p class="eyebrow">Steps 2–3 of 3 · About you</p>
+    <h2 style="margin-top:10px">A few questions about your finances</h2>
+    <p class="sub">The law asks us to make sure startup investing fits your situation. Ranges are enough.</p>
+    <p class="q">Yearly income</p>
+    <div class="chips">${INCOMES.map(o=>`<button class="chip ${S.income===o?'on':''}" onclick="S.income='${o}';render()">${o}</button>`).join('')}</div>
+    ${lowIncomeHTML()}
+    <p class="q">Savings and investments (excluding your home)</p>
+    <div class="chips">${WORTHS.map(o=>`<button class="chip ${S.worth===o?'on':''}" onclick="S.worth='${o}';render()">${o}</button>`).join('')}</div>
+    ${limitCardHTML()}
+    <p class="q">Your investing experience</p>
+    <div class="chips">${EXPS.map(o=>`<button class="chip ${(S.exp||[]).includes(o)?'on':''}" onclick="togExp(\`${o}\`)">${o}</button>`).join('')}</div>
+    <button class="card row" style="margin-top:20px;width:100%;text-align:left;align-items:flex-start;${S.riskOk?'border-color:var(--surface-inverse)':''}" onclick="S.riskOk=!S.riskOk;render()">
+      <span style="width:22px;height:22px;border-radius:6px;border:1px solid var(--line3);display:flex;align-items:center;justify-content:center;flex-shrink:0;${S.riskOk?'background:var(--surface-inverse);color:var(--ink-inv);border-color:var(--surface-inverse)':''}">${S.riskOk?I('check'):''}</span>
+      <span style="font-size:14px;line-height:1.45">I understand that I could lose all the money I put into startups, and that I may not be able to sell for years.</span>
+    </button>
+    <p class="small" style="margin-top:18px">Limits shown follow the US crowdfunding rules (Reg CF) as an example. CapSi's final limits depend on its legal setup. Test version: your answers only help us improve the app.</p>
+    <div class="ctaBar"><button class="btn" ${ok?'':'disabled'} onclick="verifyDone()">Finish verification</button>
+    ${overLimit()?'<p class="small err" style="margin-top:8px;text-align:center">Your plan is above your yearly limit. Lower it to continue.</p>':''}</div>`;
+}
+function togExp(o){ S.exp=S.exp||[]; const i=S.exp.indexOf(o); i>=0?S.exp.splice(i,1):S.exp.push(o); render(); }
+
+/* ---------- yearly cash-out (redemption) ---------- */
+const portfolioValue = () => S.amount*12*1.08;
+function startRedeem(){ S.rDraft={type:'all', part:'', stopPlan:true, ok:false}; S.rStep=0; S.view='redeem'; log('redeem_start'); $('screen').scrollTop=0; render(); }
+function rGo(n){ S.rStep=n; log('redeem_step:'+n); $('screen').scrollTop=0; render(); }
+function rBack(){ S.view='app'; S.tab='me'; $('screen').scrollTop=0; render(); }
+function rAmount(){ const d=S.rDraft, v=portfolioValue(); return d.type==='all' ? v : Math.min(v, parseInt(d.part||'0',10)); }
+function rRequest(){
+  const d=S.rDraft;
+  S.redeem={type:d.type, amount:Math.round(rAmount()), stopPlan:d.stopPlan, prevPaused:S.paused, at:new Date().toISOString().slice(0,10)};
+  if (d.stopPlan) S.paused=true;
+  log('redeem_requested:'+d.type+':'+S.redeem.amount+(d.stopPlan?':stop_plan':''));
+  rGo(2);
+}
+function rCancel(){
+  if (!S.redeem) return;
+  S.paused=S.redeem.prevPaused; S.redeem=null; log('redeem_cancel');
+  render(); setTimeout(()=>toast('Cash-out request cancelled','✓'),150);
+}
+function rTimeline(done){
+  const steps=[['Request sent','Today'],['Value is fixed','31 Dec 2026'],['Paid to your bank','By 31 Jan 2027: everything, or a first part if the 5% limit is reached'],['Any rest','Paid in the next window(s), until you have it all back']];
+  return `<div style="margin-top:6px">${steps.map(([t,d],i)=>`
+    <div class="row" style="align-items:flex-start;gap:14px;padding:8px 0">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <span style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;${i<done?'background:var(--surface-inverse);color:var(--ink-inv)':'border:1px solid var(--line3);color:var(--line3)'}">${i<done?I('check','ico" style="width:13px;height:13px'):''}</span>
+        ${i<3?'<span style="width:1px;height:22px;background:var(--line2);margin-top:4px"></span>':''}
+      </div>
+      <div><b style="font-size:14px;font-weight:600">${t}</b><p class="small">${d}</p></div>
+    </div>`).join('')}</div>`;
+}
+const LIMIT_USED=1.8; // example: requests so far this year, % of the fund
+function limitCard(){
+  return `<div class="card" style="margin-top:12px">
+    <div class="between"><b style="font-size:14px;font-weight:600">The 5% yearly limit</b><span class="pill warm">Example</span></div>
+    <p class="small" style="margin-top:6px;color:var(--ink2)">Each year, CapSi pays out up to 5% of all members' money. This protects the startups and everyone who stays invested.</p>
+    <div class="between small" style="margin-top:12px"><span>Requests so far this year</span><b style="color:var(--ink)">${LIMIT_USED}% of 5%</b></div>
+    <div style="height:6px;background:var(--line);border-radius:6px;margin-top:6px;overflow:hidden"><i style="display:block;height:100%;width:${LIMIT_USED/5*100}%;background:var(--ink)"></i></div>
+    <p class="small" style="margin-top:12px;color:var(--ink2)"><b>Under 5%:</b> everyone is paid in full by 31 Jan.<br><b>Over 5%:</b> everyone gets the same share now, and the rest in the next window(s). Example: if requests add up to 10%, you get half now and half next year.</p>
+    <button class="edit" style="margin-top:10px" onclick="openLesson('l6')">How cash-out works</button>
+  </div>`;
+}
+function vRedeem(){
+  const d=S.rDraft, v=portfolioValue();
+  const bar=`<div class="steps">${[0,1,2].map(i=>`<i class="${i<=S.rStep?'on':''}"></i>`).join('')}</div>`;
+  if (S.rStep===0){
+    const partOk = d.type==='all' || (parseInt(d.part||'0',10)>=50 && parseInt(d.part,10)<=v);
+    return `${bar}
+    <p class="eyebrow">Yearly cash-out</p>
+    <h2 style="margin-top:10px">Take your money out</h2>
+    <p class="sub">Once a year, you can ask to cash out all or part of your portfolio. You always get all of it back, but if many members cash out in the same year it can come in parts.</p>
+    <div class="card" style="margin-top:18px">
+      <p class="small">Your portfolio today (example)</p>
+      <p class="big" style="margin-top:2px">${fmt(v)}</p>
+      <p class="small" style="margin-top:4px">The final amount is set on 31 Dec 2026 and can be higher or lower.</p>
+    </div>
+    <p class="q">How much?</p>
+    <div class="stack">
+      <button class="card between" style="width:100%;text-align:left;${d.type==='all'?'border-color:var(--surface-inverse)':''}" onclick="S.rDraft.type='all';S.rDraft.stopPlan=true;render()">
+        <div><b style="font-size:15px;font-weight:600">Everything</b><p class="small">About ${fmt(v)}</p></div><span class="switch ${d.type==='all'?'on':''}" style="transform:scale(.8)"></span></button>
+      <button class="card between" style="width:100%;text-align:left;${d.type==='part'?'border-color:var(--surface-inverse)':''}" onclick="S.rDraft.type='part';S.rDraft.stopPlan=false;render()">
+        <div><b style="font-size:15px;font-weight:600">Part of it</b><p class="small">Choose an amount</p></div><span class="switch ${d.type==='part'?'on':''}" style="transform:scale(.8)"></span></button>
+    </div>
+    ${d.type==='part'?`<input type="text" inputmode="numeric" style="margin-top:10px" placeholder="Amount in $ (min. $50)" value="${esc(d.part)}" oninput="S.rDraft.part=this.value.replace(/[^0-9]/g,'');this.value=S.rDraft.part;document.getElementById('rNext').disabled=!(parseInt(S.rDraft.part||'0',10)>=50&&parseInt(S.rDraft.part,10)<=${Math.round(v)})">`:''}
+    <div class="card between" style="margin-top:14px">
+      <div><b style="font-size:14px;font-weight:600">Also stop my monthly plan</b><p class="small">You can restart it any time.</p></div>
+      <button class="switch ${d.stopPlan?'on':''}" aria-label="Stop monthly plan" onclick="S.rDraft.stopPlan=!S.rDraft.stopPlan;this.classList.toggle('on')"></button>
+    </div>
+    <p class="q">How it works</p>
+    <div class="card" style="padding:10px 18px">${rTimeline(0)}</div>
+    ${limitCard()}
+    <div class="ctaBar"><button class="btn" id="rNext" ${partOk?'':'disabled'} onclick="rGo(1)">Continue</button>
+    <button class="btn link" onclick="rBack()">Cancel</button></div>`;
+  }
+  if (S.rStep===1) return `${bar}
+    <p class="eyebrow">Check and confirm</p>
+    <h2 style="margin-top:10px">Your cash-out request</h2>
+    <div class="card" style="margin-top:16px;padding:4px 18px">
+      <div class="kv"><span>Amount</span><b>${d.type==='all'?'Everything (about '+fmt(v)+')':fmt(rAmount())}</b></div>
+      <div class="kv"><span>Paid to</span><b>Your bank account •••• 4821</b></div>
+      <div class="kv"><span>Monthly plan</span><b>${d.stopPlan?'Stops now':'Continues'}</b></div>
+      <div class="kv"><span>Credits and badges</span><b>You keep them</b></div>
+      <div class="kv"><span>Money arrives</span><b>By 31 Jan 2027, in full if the 5% limit isn't reached</b></div>
+    </div>
+    <div class="card tint" style="margin-top:12px"><p class="small" style="color:var(--ink2)"><b>Not guaranteed in one go.</b> CapSi pays out up to 5% of all members' money each year. If requests go over that, you get a share now and the rest in the next window(s), until you have all of it. We'll tell you before 31 Dec how much comes in January.</p></div>
+    <button class="card row" style="margin-top:14px;width:100%;text-align:left;align-items:flex-start;${d.ok?'border-color:var(--surface-inverse)':''}" onclick="S.rDraft.ok=!S.rDraft.ok;render()">
+      <span style="width:22px;height:22px;border-radius:6px;border:1px solid var(--line3);display:flex;align-items:center;justify-content:center;flex-shrink:0;${d.ok?'background:var(--surface-inverse);color:var(--ink-inv);border-color:var(--surface-inverse)':''}">${d.ok?I('check'):''}</span>
+      <span style="font-size:14px;line-height:1.45">I understand that cash-outs are limited to 5% of the fund each year, so my money may come back in parts, and that the final amount is set on 31 Dec 2026 and can be higher or lower than today.</span>
+    </button>
+    <div class="ctaBar"><button class="btn" ${d.ok?'':'disabled'} onclick="rRequest()">Request cash-out</button>
+    <button class="btn link" onclick="rGo(0)">Back</button></div>`;
+  return `<div style="text-align:center;margin-top:30px">${orb(130)}
+    <p class="eyebrow" style="margin-top:22px">Request received</p>
+    <h2 style="margin-top:8px">We've got your cash-out request</h2>
+    <p class="sub">${S.redeem&&S.redeem.type==='all'?'Everything':fmt((S.redeem||{}).amount||0)} will be paid to your bank account. If this year's requests stay under the 5% limit, it all arrives by 31 Jan 2027. If not, you'll get a first part then and the rest in the next window(s).</p></div>
+    <div class="card" style="margin-top:20px;padding:10px 18px">${rTimeline(1)}</div>
+    <p class="small" style="margin-top:12px;text-align:center">You can cancel until 31 Dec 2026 in the Me tab.</p>
+    <div class="ctaBar"><button class="btn" onclick="rBack()">Back to my account</button></div>`;
+}
+function redeemStatusCard(){
+  if (!S.redeem) return '';
+  return `<div class="card" style="margin-top:12px;border-color:var(--line3)">
+    <div class="between"><div><p class="eyebrow" style="font-size:11px">Cash-out requested</p>
+    <p style="font-weight:600;margin-top:6px">${S.redeem.type==='all'?'Everything':fmt(S.redeem.amount)} · first payout by 31 Jan</p></div>
+    <button class="edit" onclick="rCancel()">Cancel</button></div>
+    ${rTimeline(1)}</div>`;
+}
+
+/* ---------- edit plan & details ---------- */
+let E=null;
+const THEMES=['Under-the-radar founders','Climate','Health','Fintech','AI','Consumer','Education'];
+const SKILLS=['Marketing','Legal','Finance','Product','Engineering','Health','Sales','HR','Design'];
+const TIMES=['Not now','1 hour','2–3 hours','5+ hours'];
+function sheetHTML(html){ const sh=$('sheet'), top=sh.scrollTop; sh.innerHTML='<div class="grab"></div>'+html; sh.scrollTop=top; }
+function openEditPlan(){
+  E={amount:S.amount, custom:[50,100,250,500].includes(S.amount)?'':String(S.amount), themes:[...S.themes], paused:S.paused};
+  log('edit_plan_open'); openSheet(editPlanHTML(),'editplan');
+}
+function editPlanHTML(){
+  return `<p class="eyebrow">Your plan</p><h2 style="margin-top:10px">Change your plan</h2>
+  <p class="q">Monthly amount</p>
+  <div class="chips">${[50,100,250,500].map(a=>`<button class="chip amount ${E.amount===a&&!E.custom?'on':''}" onclick="E.amount=${a};E.custom='';sheetHTML(editPlanHTML())">$${a}</button>`).join('')}</div>
+  <p class="small" style="margin:12px 0 6px">Or your own amount (min. $50)</p>
+  <input type="text" inputmode="numeric" placeholder="e.g. 150" value="${esc(E.custom)}" oninput="customAmt(this)">
+  <div class="card between" style="margin-top:18px">
+    <div><b style="font-size:14px;font-weight:600">Pause my plan</b><p class="small">No new investments until you resume. You keep what you own.</p></div>
+    <button class="switch ${E.paused?'on':''}" aria-label="Pause plan" onclick="E.paused=!E.paused;this.classList.toggle('on')"></button>
+  </div>
+  <p class="q">Themes</p>
+  <div class="chips">${THEMES.map(t=>`<button class="chip ${E.themes.includes(t)?'on':''}" onclick="togE('themes','${t}',this)">${t}</button>`).join('')}</div>
+  <p class="small" id="planErr" style="margin-top:14px;color:var(--accent-s)"></p>
+  <div class="ctaBar"><button class="btn" onclick="savePlan()">Save changes</button>
+  <button class="btn link" onclick="closeSheet()">Cancel</button></div>`;
+}
+function customAmt(el){
+  E.custom=el.value.replace(/[^0-9]/g,''); el.value=E.custom;
+  document.querySelectorAll('#sheet .amount').forEach(b=>b.classList.toggle('on', !E.custom && b.textContent==='$'+E.amount));
+}
+function togE(k,v,el){ const a=E[k], i=a.indexOf(v); i>=0?a.splice(i,1):a.push(v); el.classList.toggle('on'); }
+function savePlan(){
+  let amt=E.amount;
+  if (E.custom){ amt=parseInt(E.custom,10); if(!(amt>=50)){ $('planErr').textContent='The minimum is $50 a month.'; return; } }
+  const L=investLimit();
+  if (L && amt*12 > L.limit){ log('limit_block_change:'+amt); $('planErr').textContent=`That's above your yearly limit of ${fmt(L.limit)}. The most you can invest is $${L.maxMonthly} a month.`; return; }
+  const changed = amt!==S.amount || E.paused!==S.paused;
+  S.amount=amt; S.paused=E.paused; S.themes=E.themes;
+  log('plan_saved:'+amt+(S.paused?':paused':'')+';themes:'+S.themes.join('|'));
+  closeSheet(); render();
+  setTimeout(()=>toast(S.paused?'Your plan is paused':changed?`Plan updated to $${amt} a month`:'Plan saved','✓'),250);
+}
+function openEditDetails(){ E={name:S.name, email:S.email, skills:[...S.skills], time:S.time}; log('edit_details_open'); openSheet(editDetailsHTML(),'editdetails'); }
+function editDetailsHTML(){
+  return `<p class="eyebrow">Personal details</p><h2 style="margin-top:10px">Edit your details</h2>
+  <p class="q">First name</p><input type="text" value="${esc(E.name)}" oninput="E.name=this.value">
+  <p class="q">Email</p><input type="email" placeholder="you@example.com" value="${esc(E.email)}" oninput="E.email=this.value">
+  <p class="q">Your expertise</p>
+  <p class="small" style="margin:-4px 0 10px">Founders' asks that match these show up first.</p>
+  <div class="chips">${SKILLS.map(t=>`<button class="chip ${E.skills.includes(t)?'on':''}" onclick="togE('skills','${t}',this)">${t}</button>`).join('')}</div>
+  <p class="q">Time you could give per month</p>
+  <div class="chips">${TIMES.map(t=>`<button class="chip ${E.time===t?'on':''}" onclick="E.time='${t}';sheetHTML(editDetailsHTML())">${t}</button>`).join('')}</div>
+  <p class="small" id="detErr" style="margin-top:14px;color:var(--accent-s)"></p>
+  <div class="ctaBar"><button class="btn" onclick="saveDetails()">Save changes</button>
+  <button class="btn link" onclick="closeSheet()">Cancel</button></div>`;
+}
+function saveDetails(){
+  if (E.email && !/^\S+@\S+\.\S+$/.test(E.email)){ $('detErr').textContent='Please check the email address.'; return; }
+  S.name=E.name.trim(); S.email=E.email.trim(); S.skills=E.skills; S.time=E.time;
+  log('details_saved;skills:'+S.skills.join('|')+';time:'+S.time);
+  closeSheet(); render(); setTimeout(()=>toast('Details saved','✓'),250);
+}
+
+function renderTabs(){
+  const t = [['home','home',S.helperOnly?'Home':'Portfolio'],['bank','clock','Time Bank'],['learn','book','Learn'],['me','user','Me']];
+  $('tabs').innerHTML = t.map(([k,ic,l])=>`<button class="${S.tab===k?'on':''}" onclick="setTab('${k}')">${I(ic,'')}${l}</button>`).join('');
+}
+
+/* ---------- actions ---------- */
+function go(v){ if(v==='app'&&!S.hinted) setTimeout(showHintOnce,12000); S.view=v; log('view:'+v); $('screen').scrollTop=0; render(); }
+function setTab(t){ S.tab=t; log('tab:'+t); $('screen').scrollTop=0; render(); }
+function tog(key,v){ const a=S[key]; const i=a.indexOf(v); i>=0?a.splice(i,1):a.push(v); render(); }
+function openSheet(html, name){ $('phone').classList.add('sheetOpen'); S.sheetName=name||'sheet'; $('sheet').innerHTML='<div class="grab"></div>'+html; $('sheet').scrollTop=0; $('sheet').classList.add('open'); $('sheetBg').classList.add('open'); }
+function closeSheet(){ $('phone').classList.remove('sheetOpen'); S.sheetName=null; $('sheet').classList.remove('open'); $('sheetBg').classList.remove('open'); }
+$('sheetBg').onclick = closeSheet;
+let tt; function toast(msg, plus){ const t=$('toast'); t.innerHTML=(plus?`<span class="plus">${plus}</span>`:'')+`<span>${msg}</span>`; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2600); }
+function confetti(){ const c=$('confetti'); c.innerHTML=''; const cols=['#e05a43','#f0d3b8','#e4cba9','#b7a68f','#f3e7d6']; for(let i=0;i<40;i++){ const e=document.createElement('i'); e.style.left=Math.random()*100+'%'; e.style.background=cols[i%5]; e.style.animationDelay=(Math.random()*.4)+'s'; c.appendChild(e);} setTimeout(()=>c.innerHTML='',2000); }
+
+function openStartup(id){
+  const x=st(id); log((x.deal?'deal:':'startup:')+id);
+  const asks=ASKS.filter(a=>a.s===id && !S.helped.includes(a.id));
+  openSheet(`<div class="row"><div class="avatar" style="background:${x.color};width:52px;height:52px;font-size:20px">${x.name[0]}</div>
+    <div><h2 style="margin:0">${x.name}</h2><p class="small">${x.sector} · ${x.country}</p></div></div>
+    <div class="row" style="gap:6px;margin-top:12px">${x.radar?'<span class="pill warm">Under the radar</span>':''}<span class="pill">${x.stage}</span>${x.deal?'<span class="pill coral">Open deal</span>':''}<span class="pill">Sample</span></div>
+    <p style="margin-top:16px;font-size:15px;line-height:1.5">${x.what}</p>
+    <div class="card" style="margin-top:16px">
+      ${S.helperOnly||x.deal?'':`<div class="between" style="margin-bottom:8px"><span class="sub">Your share</span><b>$${x.share}</b></div>`}
+      <div class="between"><span class="sub">Round</span><b>${x.round}</b></div>
+      <div class="between" style="margin-top:8px"><span class="sub">Valuation</span><b>${x.val}</b></div>
+      <div class="between" style="margin-top:8px;gap:12px"><span class="sub" style="flex-shrink:0">Lead investor</span><b style="text-align:right">${x.lead||'–'}</b></div>
+    </div>
+    ${x.deal?`<div class="card tint" style="margin-top:12px"><div class="between"><b style="font-size:14px;color:var(--accent-s)">Open now · closes in ${x.closes} days</b><span class="small">${x.filled}% filled</span></div>
+      <div class="progress light" style="margin-top:10px"><i style="width:${x.filled}%"></i></div>
+      <p class="small" style="margin-top:10px">${S.helperOnly?'Members with a plan join this round automatically.':'Your plan joins this round automatically, about $'+Math.max(2,Math.round(S.amount*0.12))+' of your next deposit. You can skip any deal.'}</p>
+      ${S.helperOnly?'':`<button class="btn ghost sm" style="margin-top:10px" onclick="log('deal_skip:${x.id}');toast('You\'ll skip ${x.name}','✓');closeSheet()">Skip this deal</button>`}</div>`:''}
+    <p class="q">The founders</p><p class="sub">${x.founders}</p>
+    <p class="q">Why we invested</p><p class="sub">${x.why}</p>
+    <p class="q">Main risk</p><p class="sub">${x.risk}</p>
+    <div class="card tint" style="margin-top:18px"><p class="small"><b style="color:var(--accent-s)">Founder update · last week</b></p><p style="font-size:14px;margin-top:6px">${x.update}</p></div>
+    ${asks.length?`<button class="btn" style="margin-top:18px" onclick="closeSheet();setTimeout(()=>openAsk('${asks[0].id}'),250)">${I('clock')} Help ${x.name}: +${fmtC(asks[0].credits)} credit</button>`:''}`, 'startup');
+}
+let pickedSlot='';
+function openAsk(id){
+  const a=ASKS.find(q=>q.id===id), x=st(a.s); pickedSlot=''; log('ask_open:'+id);
+  const timed = a.type==='call'||a.type==='interview';
+  openSheet(`<span class="pill coral">+${fmtC(a.credits)} credit</span>
+    <h2 style="margin-top:10px">${a.title}</h2>
+    <p class="sub">${x.name} · ${x.what}</p>
+    ${timed?`<p class="q">Pick a time</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${['Tue 10:00','Tue 17:30','Wed 12:00','Thu 18:00'].map(s=>`<button class="slot" onclick="pickSlot(this,'${s}')">${s}</button>`).join('')}</div>`
+    : a.type==='test' ? `<div class="card" style="margin-top:16px"><p class="sub">You'll get a test link. Try the app for 20 minutes, then answer 5 questions.</p></div>`
+    : `<p class="q">Who could you introduce?</p><input type="text" placeholder="Name or role (optional)">`}
+    <p class="small" style="margin-top:14px">The founder confirms after you've helped. Then your credit is added.</p>
+    <div class="ctaBar"><button class="btn" onclick="doHelp('${id}')">Confirm</button>
+    <button class="btn link" onclick="closeSheet()">Not now</button></div>`, 'ask');
+}
+function pickSlot(el,s){ pickedSlot=s; document.querySelectorAll('.slot').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
+function doHelp(id){
+  const a=ASKS.find(q=>q.id===id); const before=level().n;
+  S.helped.push(id); S.credits+=a.credits; S.hours+=a.credits; log('helped:'+id);
+  if(!S.badges.includes('first')) S.badges.push('first');
+  if(a.type==='test' && !S.badges.includes('tester')) S.badges.push('tester');
+  if(a.type==='intro' && !S.badges.includes('connector')) S.badges.push('connector');
+  closeSheet(); render(); confetti();
+  const after=level().n;
+  setTimeout(()=>toast(after!==before?`Level up: you're now a ${after}!`:`Thanks! ${st(a.s).name} will confirm after the call.`, '+'+fmtC(a.credits)), 250);
+}
+function openOffer(id){
+  const o=OFFERS.find(q=>q.id===id); log('offer_open:'+id);
+  const ok=S.credits>=o.cost;
+  openSheet(`<div class="avatar" style="background:var(--cream);color:var(--accent-s);width:52px;height:52px">${I(o.icon)}</div>
+    <h2 style="margin-top:14px">${o.title}</h2><p class="sub">With ${o.who}</p>
+    <div class="card" style="margin-top:16px"><div class="between"><span class="sub">Cost</span><b>${fmtC(o.cost)} credit${o.cost===1?'':'s'}</b></div><div class="between" style="margin-top:8px"><span class="sub">Your balance</span><b>${fmtC(S.credits)}</b></div></div>
+    <p class="q">What do you need help with?</p><textarea rows="3" placeholder="A short note for ${esc(o.who.split(',')[0])}"></textarea>
+    ${ok?`<button class="btn" style="margin-top:16px" onclick="doSpend('${id}')">Request for ${fmtC(o.cost)} credit${o.cost===1?'':'s'}</button>`
+       :`<button class="btn" disabled style="margin-top:16px">Not enough credits yet</button><button class="btn ghost" style="margin-top:8px" onclick="closeSheet();S.tbSeg='earn';render()">Earn credits</button>`}
+    <button class="btn link" style="margin-top:4px" onclick="closeSheet()">Cancel</button>`, 'offer');
+}
+function doSpend(id){ const o=OFFERS.find(q=>q.id===id); S.credits-=o.cost; S.booked.push(id); log('spent:'+id); closeSheet(); render(); setTimeout(()=>toast(`Request sent to ${o.who.split(',')[0]}`,'−'+fmtC(o.cost)),250); }
+function openLesson(id){
+  const l=LESSONS.find(x=>x.id===id); log('lesson:'+id);
+  openSheet(`<span class="pill">${l.m} min read</span><h2 style="margin-top:10px">${l.t}</h2><p style="font-size:15px;line-height:1.6;margin-top:10px">${l.body}</p>
+  <button class="btn" style="margin-top:22px" onclick="doneLesson('${id}')">Got it</button>`, 'lesson');
+}
+function doneLesson(id){ if(!S.lessonsDone.includes(id)) S.lessonsDone.push(id); closeSheet(); render(); toast('Lesson done', '✓'); }
+
+/* ---------- feedback ---------- */
+const QS = [
+  {k:'clear', q:'How easy was the app to understand?', t:'scale'},
+  {k:'invest', q:'Would you invest $50+ a month with an app like this?', t:'one', o:['Yes','Maybe','No']},
+  {k:'amount', q:'How much would you realistically put in each month?', t:'one', o:['$0','$50','$100','$250','$500+']},
+  {k:'kyc', q:'How did the ID and income check feel?', t:'one', o:['Fine, I expect it','A bit annoying','It would stop me','I skipped it']},
+  {k:'liquidity', q:'How often would you want to be able to cash out?', t:'one', o:['Once a year is fine','Every 3 months','Any time']},
+  {k:'limit', q:'Would the 5% yearly cash-out limit worry you?', t:'one', o:['No, it makes sense','A little','Yes, it would stop me']},
+  {k:'help', q:'Would you help founders with your time in return for credits?', t:'one', o:['Yes','Maybe','No']},
+  {k:'motive', q:'What would motivate you most to help? (pick up to 2)', t:'multi', o:['Credits to get help myself','Badges and levels','Backing overlooked founders','Learning from startups','Networking','Nothing, I\'d just invest']},
+  {k:'spend', q:'What would you spend credits on?', t:'multi', o:['Legal advice','Marketing help','Career advice','Pitch or business feedback','Founder office hours','Events']},
+  {k:'board', q:'How do you feel about the "Top helpers" ranking?', t:'one', o:['I like it','Neutral','I don\'t like it']},
+  {k:'trustscale', q:'After this test, how much would you trust CapSi with your money?', t:'scale'},
+  {k:'trustwhy', q:'What builds the most trust for you? (pick up to 3)', t:'multi', o:['Who runs it','Lead investors we invest alongside','Seeing every startup I own','Bank and legal protection','Clear cash-out rules','A community of women investors','Seeing open deals']},
+  {k:'trust', q:'What would you still need to trust CapSi with your money?', t:'text'},
+  {k:'confusing', q:'Anything confusing, missing or that you loved?', t:'text'},
+  {k:'updates', q:'Can we email you about early access?', t:'one', o:['Yes','No']}
+];
+function openFeedback(){
+  log('feedback_open');
+  if (S.fbSent) { openSheet(`<h2>Thank you!</h2><p class="sub">Your answers are saved. You can close this page.</p>`); return; }
+  const f=S.fb;
+  openSheet(`<h2>Your feedback</h2><p class="sub">Honest answers help most. About 2 minutes.</p>
+  ${QS.map(q=>`<p class="q">${q.q}</p>${
+    q.t==='scale'?`<div class="scale">${[1,2,3,4,5].map(n=>`<button class="${f[q.k]===n?'on':''}" onclick="setFb('${q.k}',${n},this)">${n}</button>`).join('')}</div><div class="between small" style="margin-top:4px"><span>Confusing</span><span>Very clear</span></div>`
+    : q.t==='one'?`<div class="chips">${q.o.map(o=>`<button class="chip ${f[q.k]===o?'on':''}" onclick="setFb('${q.k}','${o.replace(/'/g,"\\'")}',this)">${o}</button>`).join('')}</div>`
+    : q.t==='multi'?`<div class="chips">${q.o.map(o=>`<button class="chip ${(f[q.k]||[]).includes(o)?'on':''}" onclick="multiFb('${q.k}','${o.replace(/'/g,"\\'")}',this)">${o}</button>`).join('')}</div>`
+    : q.t==='email'?`<input type="email" placeholder="you@example.com" value="${esc(f[q.k]||S.email||'')}" oninput="S.fb['${q.k}']=this.value">`
+    : `<textarea rows="3" oninput="S.fb['${q.k}']=this.value">${esc(f[q.k]||'')}</textarea>`
+  }`).join('')}
+  <div class="ctaBar"><button class="btn" onclick="sendFb()">Send feedback</button>
+  <p class="small" id="fbStatus" style="margin-top:8px;text-align:center"></p></div>`, 'feedback');
+}
+function setFb(k,v,el){ S.fb[k]=v; el.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
+function multiFb(k,v,el){ const a=S.fb[k]||(S.fb[k]=[]); const i=a.indexOf(v); i>=0?a.splice(i,1):a.push(v); el.classList.toggle('on'); }
+function payload(){
+  return { name:S.name||'', answers:S.fb, profile:{helperOnly:S.helperOnly, amount:S.amount, paused:S.paused, redeem:S.redeem, email:S.email, verified:S.verified, accredited:S.accredited, income:S.income, worth:S.worth, exp:S.exp, limit:investLimit()?investLimit().limit:null, themes:S.themes, skills:S.skills, time:S.time},
+    usage:{helped:S.helped, booked:S.booked, lessons:S.lessonsDone, creditsEnd:S.credits, hours:S.hours, seconds:Math.round((Date.now()-S.startedAt)/1000)},
+    events:S.events.slice(-80), at:new Date().toISOString() };
+}
+function plainText(p){
+  const a=p.answers; const lines=['CapSi prototype feedback from '+(S.email||'(no email)')];
+  QS.forEach(q=>{ const v=a[q.k]; if(v!==undefined&&v!==''&&!(Array.isArray(v)&&!v.length)) lines.push(q.q+' '+(Array.isArray(v)?v.join(', '):v)); });
+  lines.push(`Plan: $${p.profile.amount}/month · Themes: ${p.profile.themes.join(', ')||'-'} · Skills: ${p.profile.skills.join(', ')||'-'} · Time: ${p.profile.time||'-'}`);
+  lines.push(`Helped founders: ${p.usage.helped.length}, requested ${p.usage.booked.length} offers, ${p.usage.seconds}s in app`);
+  return lines.join('\n');
+}
+async function sendFb(){
+  const p=payload(); const status=$('fbStatus'); status.textContent='Saving…';
+  if (!S.runId){ S.runId=newRunId(); S.testStart=new Date().toISOString(); }
+  S.fbSent=true; log('feedback_send');
+  const saved = await saveRun();
+  S.fbSent = saved;
+  if (saved){
+    log('feedback_saved'); confetti();
+    openSheet(`<div style="text-align:center;padding:20px 0">${orb(120)}<div style="height:18px"></div>
+    <h2>Thank you${S.name?', '+esc(S.name):''}!</h2><p class="sub">Your feedback is saved. It really helps us build CapSi the right way.</p></div>
+    <button class="btn ghost" style="margin-top:8px" onclick="restart()">${I('rotate')} Try another path from the start</button>`);
+  } else {
+    window._fbText = plainText(p);
+    openSheet(`<h2>Almost done</h2><p class="sub">We couldn't reach our database just now. Please copy your answers and send them to Maide by WhatsApp or email.</p>
+      <textarea rows="9" readonly style="margin-top:14px;font-size:12px">${esc(window._fbText)}</textarea>
+      <button class="btn" style="margin-top:14px" onclick="copyFb(this)">${I('copy')} Copy my answers</button>
+      <p class="small" style="margin-top:10px;text-align:center">maide@capsi.io</p>`);
+  }
+}
+function copyFb(btn){ navigator.clipboard.writeText(window._fbText).then(()=>{btn.innerHTML=I('check')+' Copied';S.fbSent=true;},()=>{btn.textContent='Select the text above and copy it';}); }
+function withTimeout(p,ms){ return Promise.race([Promise.resolve(p), new Promise(r=>setTimeout(()=>r(null),ms))]); }
+
+/* ---------- per-screen feedback ---------- */
+const REACTS=[['clear','Clear','check'],['confusing','Confusing','x'],['love','Love it','heart'],['useless','Not useful','zap']];
+let NOTE=null;
+function openNote(){
+  NOTE={k:screenKey(), r:'', c:''}; log('note_open:'+NOTE.k); hideHint(true);
+  openSheet(noteHTML(),'note');
+}
+function noteHTML(){
+  return `<p class="eyebrow">Feedback on this screen</p>
+  <h2 style="margin-top:10px">How does this screen feel?</h2>
+  <p class="small" style="margin-top:2px">${esc(keyName(NOTE.k))}</p>
+  <div class="react" style="margin-top:16px">${REACTS.map(([v,l,ic])=>`<button class="${NOTE.r===v?'on':''}" onclick="NOTE.r='${v}';sheetHTML(noteHTML())">${I(ic)}<span>${l}</span></button>`).join('')}</div>
+  <p class="q">What would you change? <span class="small" style="font-weight:400">(optional)</span></p>
+  <textarea rows="3" placeholder="Anything that was unclear, missing or great" oninput="NOTE.c=this.value">${esc(NOTE.c)}</textarea>
+  <div class="ctaBar"><button class="btn" ${NOTE.r||NOTE.c?'':'disabled'} id="noteSend" onclick="sendNote()">Send</button>
+  <div class="linkRow"><button class="btn link" onclick="closeSheet()">Cancel</button><button class="btn link muted" onclick="closeSheet();setTimeout(openFeedback,260)">Full survey</button></div></div>`;
+}
+document.addEventListener('input', e=>{ if(e.target.closest && e.target.closest('#sheet') && NOTE && $('noteSend')) $('noteSend').disabled=!(NOTE.r||NOTE.c.trim()); });
+function sendNote(){
+  if (!NOTE) return;
+  S.notes.push({k:NOTE.k, r:NOTE.r, c:(NOTE.c||'').trim(), t:Math.round((Date.now()-S.startedAt)/1000)});
+  log('note:'+NOTE.k+':'+(NOTE.r||'comment'));
+  NOTE=null; closeSheet(); saveRun(); setTimeout(()=>toast('Thanks! Noted for this screen.','✓'),250);
+}
+let hintT=null;
+function showHintOnce(){
+  if (S.hinted || RESULTS) return;
+  S.hinted=true; $('fbHint').classList.add('show'); log('note_hint');
+  clearTimeout(hintT); hintT=setTimeout(()=>hideHint(),5500);
+}
+function hideHint(seen){ $('fbHint').classList.remove('show'); if(seen) S.hinted=true; }
+
+/* ---------- start over ---------- */
+function openRestart(){
+  log('restart_open');
+  openSheet(`<p class="eyebrow">Start over</p>
+    <h2 style="margin-top:10px">Go back to the beginning?</h2>
+    <p class="sub">This clears your choices in this test, so you can try a different path, for example joining the community without investing.</p>
+    <p class="small" style="margin-top:8px">Feedback you already sent stays saved.</p>
+    <button class="btn" style="margin-top:20px" onclick="restart()">${I('rotate')} Start over</button>
+    <button class="btn link" style="margin-top:4px" onclick="closeSheet()">Cancel</button>`, 'restart');
+}
+function restart(){
+  const keep = { events: [], clicks: [], notes: [], hinted: false, fbSent: false, lang: S.lang, runId: null, email: '' };
+  Object.keys(S).forEach(k => delete S[k]);
+  Object.assign(S, JSON.parse(JSON.stringify(S0)), keep, { startedAt: Date.now() });
+  log('restart');
+  closeSheet(); $('screen').scrollTop = 0; render();
+}
+
+/* ---------- tap tracking (heat map) ---------- */
+let OWNER=false, RESULTS=false, UID=null, DB=null, DATA={fb:[], ss:[]};
+S.clicks=[];
+function screenKey(){
+  if (S.sheetName) return 'sheet:'+S.sheetName;
+  if (S.view==='onb') return 'onb:'+S.step;
+  if (S.view==='about') return 'about:'+(S.aStep||0);
+  if (S.view==='verify') return 'verify:'+S.vStep;
+  if (S.view==='redeem') return 'redeem:'+S.rStep;
+  if (S.view==='app') return 'app:'+S.tab+(S.tab==='bank'?':'+S.tbSeg:'');
+  return S.view;
+}
+const KEYNAMES={'intro':'Welcome','onb:0':'Setup: amount','onb:1':'Setup: themes','onb:2':'Setup: expertise','ready':'Plan ready','app:home':'Portfolio','app:bank:earn':'Time Bank · Earn','app:bank:spend':'Time Bank · Spend','app:bank:board':'Time Bank · Community','app:learn':'Learn','app:me':'Me','sheet:startup':'Startup detail','sheet:ask':'Help a founder','sheet:offer':'Request help','sheet:lesson':'Lesson','sheet:feedback':'Feedback form','sheet:editplan':'Change plan','verify:0':'Verification intro','sheet:accred':'Accredited check','sheet:restart':'Start over','sheet:note':'Screen feedback','redeem:0':'Cash-out: amount','redeem:1':'Cash-out: confirm','redeem:2':'Cash-out: done','verify:1':'ID check','verify:2':'Checking ID','verify:3':'Income and risk','sheet:editdetails':'Edit details','sheet:sheet':'Popup','about:0':'Intro: what CapSi is','about:1':'Intro: who runs it','about:2':'Intro: who we invest with','about:3':'Intro: where money goes','about:4':'Intro: what you get'};
+const keyName=(k)=>KEYNAMES[k]||k;
+$('phone').addEventListener('pointerdown', (e)=>{
+  if (RESULTS) return;
+  const pr=$('phone').getBoundingClientRect(), x=+((e.clientX-pr.left)/pr.width).toFixed(3);
+  const sheet=$('sheet'), scr=$('screen');
+  let m, y;
+  if (S.sheetName && sheet.contains(e.target)) { m='s'; y=e.clientY-sheet.getBoundingClientRect().top+sheet.scrollTop; }
+  else if ($('tabs').contains(e.target)) { m='f'; y=pr.bottom-e.clientY; }
+  else if (scr.contains(e.target)) { m='c'; y=e.clientY-scr.getBoundingClientRect().top+scr.scrollTop; }
+  else return;
+  S.clicks.push({k:screenKey(), m, x, y:Math.round(y)});
+  if (S.clicks.length>800) S.clicks.shift();
+  queueSave();
+}, true);
+/* ---------- backend: Supabase ---------- */
+/* Fill in these two values from Supabase: Project Settings -> API. */
+const CFG = {
+  url: 'https://zamzfkbxtyhfhoczhrls.supabase.co',
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphbXpma2J4dHloZmhvY3pocmxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MzY4OTIsImV4cCI6MjEwOTMxMjg5Mn0.SwPd94LzWqEVyLC831WVe3Z05TewoNfPfncRg3M-BPM',
+  admin: 'maide.altas@gmail.com'
+};
+const READY = /^https:\/\/[^ ]+$/.test(CFG.url) && CFG.key.length > 20 && !/PASTE_/.test(CFG.key);
+function hdr(token){
+  const h = { 'Content-Type':'application/json', apikey: CFG.key };
+  const t = token || (CFG.key.startsWith('eyJ') ? CFG.key : null);
+  if (t) h.Authorization = 'Bearer ' + t;
+  return h;
+}
+function rid(){ try{ return crypto.randomUUID(); }catch(e){ return Math.random().toString(36).slice(2)+Date.now().toString(36)+Math.random().toString(36).slice(2); } }
+function runSecret(){ if (S.secretFor !== S.runId){ S.runSecret = rid(); S.secretFor = S.runId; } return S.runSecret; }
+let saveT=null, dirty=false, saveChain=Promise.resolve(true), KEEP=false;
+function newRunId(){ return 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function startTest(){
+  const e=(S.email||'').trim();
+  if (!/^\S+@\S+\.\S+$/.test(e)){ $('emErr').textContent='Please enter a valid email to start.'; $('emErr').style.marginTop='6px'; $('em').focus(); return; }
+  S.email=e; S.runId=newRunId(); S.testStart=new Date().toISOString();
+  log('start'); openAbout('start'); saveRun();
+}
+function queueSave(){ dirty=true; clearTimeout(saveT); saveT=setTimeout(()=>saveRun(), 6000); }
+function saveRun(){ saveChain = saveChain.then(()=>doSave(), ()=>doSave()); return saveChain; }
+async function doSave(){
+  const ka = KEEP; KEEP = false;
+  if (RESULTS || !S.runId || !READY) return false;
+  dirty=false;
+  try{
+    const p=payload();
+    const body={ id:S.runId, secret:runSecret(), email:S.email||'', lang:S.lang, startedAt:S.testStart||'',
+      clicks:S.clicks||[], events:S.events.slice(-200), profile:p.profile, usage:p.usage,
+      answers:S.fb||{}, notes:S.notes||[], fbSent:!!S.fbSent, width:Math.round($('phone').getBoundingClientRect().width),
+      ua:navigator.userAgent };
+    const json = JSON.stringify({ p: body });
+    const ctl = new AbortController(), t = setTimeout(()=>ctl.abort(), 12000);
+    const r = await fetch(CFG.url + '/rest/v1/rpc/save_run', { method:'POST', headers:hdr(), body:json,
+      keepalive: ka && json.length < 60000, signal: ctl.signal });
+    clearTimeout(t);
+    return r.ok;
+  }catch(e){ return false; }
+}
+function flush(){ if (dirty && S.runId){ KEEP=true; saveRun(); } }
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') flush(); });
+window.addEventListener('pagehide', flush);
+
+/* ---------- owner login (results only for the admin account) ---------- */
+let TOKEN=null;
+try{ TOKEN = sessionStorage.getItem('capsi_admin') || null; }catch(e){}
+function initOwner(){
+  if (TOKEN){ OWNER=true; render(); if (location.hash==='#results') toggleResults(); }
+  else if (location.hash==='#admin' || location.hash==='#results') openLogin();
+}
+function openLogin(msg){
+  openSheet(`<p class="eyebrow">CapSi team only</p><h2 style="margin-top:10px">Owner login</h2>
+  <p class="sub">Testers don't need this. It opens the saved test results.</p>
+  ${READY?'':'<p class="small" style="color:var(--accent-s);margin-top:10px">The database isn\'t connected yet. Add the Supabase URL and key at the top of the script first.</p>'}
+  <p class="q">Email</p><input id="adEm" type="email" autocomplete="username" value="${esc(CFG.admin)}">
+  <p class="q">Password</p><input id="adPw" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+  <p class="small" id="adErr" style="color:var(--accent-s);min-height:18px;margin-top:8px">${msg?esc(msg):''}</p>
+  <button class="btn" id="adBtn" onclick="doLogin()">Log in</button>`, 'login');
+}
+async function doLogin(){
+  const em=$('adEm').value.trim(), pw=$('adPw').value, err=$('adErr'), btn=$('adBtn');
+  if (!READY){ err.textContent='Database not connected yet.'; return; }
+  btn.disabled=true; btn.textContent='Checking…'; err.textContent='';
+  try{
+    const r = await fetch(CFG.url + '/auth/v1/token?grant_type=password', { method:'POST',
+      headers:{ 'Content-Type':'application/json', apikey: CFG.key }, body: JSON.stringify({ email: em, password: pw }) });
+    const j = await r.json().catch(()=>({}));
+    if (!r.ok || !j.access_token) throw new Error(j.error_description || j.msg || 'Wrong email or password.');
+    TOKEN = j.access_token; try{ sessionStorage.setItem('capsi_admin', TOKEN); }catch(e){}
+    OWNER = true; closeSheet(); if (!RESULTS) toggleResults(); else render();
+  }catch(e){ err.textContent = (e && e.message) || 'Login failed.'; btn.disabled=false; btn.textContent='Log in'; }
+}
+function logout(){
+  TOKEN=null; try{ sessionStorage.removeItem('capsi_admin'); }catch(e){}
+  OWNER=false; if (RESULTS) toggleResults(); else render();
+}
+async function toggleResults(){
+  RESULTS=!RESULTS;
+  $('heat').classList.toggle('hidden',!RESULTS); $('heatTag').classList.toggle('hidden',!RESULTS); $('phone').classList.toggle('results',RESULTS);
+  if (RESULTS){ $('side').classList.add('res'); $('side').innerHTML='<p class="eyebrow">Results</p><p class="sub" style="margin-top:10px">Loading answers…</p>'; render(); await loadResults(); }
+  else { $('side').classList.remove('res'); $('side').innerHTML=SIDE0; render(); }
+}
+async function loadResults(){
+  try{
+    if (!READY || !TOKEN) throw 0;
+    const cols='id,email,lang,started_at,updated_at,fb_sent,width,clicks,events,notes,answers,profile,usage';
+    const ctl = new AbortController(), t = setTimeout(()=>ctl.abort(), 15000);
+    const r = await fetch(CFG.url + '/rest/v1/runs?select=' + cols + '&order=started_at.desc.nullslast&limit=2000', { headers: hdr(TOKEN), signal: ctl.signal });
+    clearTimeout(t);
+    if (r.status===401 || r.status===403){ logout(); openLogin('Your login expired. Please log in again.'); return; }
+    if (!r.ok) throw 0;
+    const rows = await r.json();
+    const runs = rows.map(x=>({ id:x.id, email:x.email, lang:x.lang, startedAt:x.started_at, at:x.updated_at, fbSent:x.fb_sent, width:x.width,
+      clicks:x.clicks||[], events:x.events||[], notes:x.notes||[], answers:x.answers||{}, profile:x.profile||{}, usage:x.usage||{} }));
+    const fbRuns=runs.filter(r=>r.fbSent||(r.answers&&Object.keys(r.answers).length));
+    DATA={ runs,
+      fb: fbRuns.map(r=>({id:r.id, name:r.email, answers:r.answers, events:r.events, usage:r.usage})),
+      ss: runs.map(r=>({id:r.id, clicks:r.clicks, events:r.events, usage:r.usage})) };
+  }catch(e){ DATA={fb:[],ss:[],runs:[],err:true}; }
+  $('side').innerHTML=summaryHTML(); drawHeat();
+}
+function summaryHTML(){
+  if (DATA.err) return '<p class="eyebrow">Results</p><p class="sub" style="margin-top:10px">Couldn\'t load results right now. Try again in a minute.</p>';
+  const fb=DATA.fb, ss=DATA.ss, ids=new Set([...fb.map(d=>d.id),...ss.map(d=>d.id)]);
+  const evOf=(id)=>{ const a=ss.find(d=>d.id===id), b=fb.find(d=>d.id===id); return [...((a&&a.events)||[]),...((b&&b.events)||[])].map(x=>x.e); };
+  const has=(id,pre)=>evOf(id).some(e=>e.startsWith(pre));
+  const n=ids.size||1, cnt=(pre)=>[...ids].filter(id=>has(id,pre)).length;
+  const secs=[...ids].map(id=>{const a=ss.find(d=>d.id===id)||fb.find(d=>d.id===id); return (a&&a.usage&&a.usage.seconds)||0;}).filter(Boolean);
+  const avg=secs.length?Math.round(secs.reduce((a,b)=>a+b,0)/secs.length/60*10)/10:0;
+  const funnel=[['Read the full intro','about_done'],['Skipped the intro','about_skip'],['Started setup','view:onb'],['Joined community only','helper_only'],['Community member started investing','helper_to_investor'],['Verified identity','verify_done'],['Chose "later"','verify_later'],['Opened accredited check','accred_open'],['Confirmed accredited','accred_yes'],['Plan was above limit','limit_over'],['Lowered plan to limit','limit_lowered'],['Reached the app','view:app'],['Opened an open deal','deal:'],['Skipped a deal','deal_skip'],['Reopened About CapSi','about_open:app'],['Opened Time Bank','tab:bank'],['Helped a founder','helped:'],['Spent credits','spent:'],['Opened cash-out','redeem_start'],['Requested cash-out','redeem_requested'],['Opened feedback','feedback_open']];
+  let h=`<p class="eyebrow">Results · owner only</p><h1 style="margin-top:12px">What testers said</h1>
+  <div class="kpis"><div class="kpi"><b>${ids.size}</b>testers</div><div class="kpi"><b>${fb.length}</b>sent feedback</div><div class="kpi"><b>${avg}</b>avg. minutes</div><div class="kpi"><b>${ss.reduce((a,d)=>a+((d.clicks||[]).length),0)}</b>taps recorded</div></div>
+  ${testersHTML()}
+  ${notesHTML()}
+  <div class="qq"><p>How far people got</p>${funnel.map(([l,p])=>{const c=cnt(p);return `<div class="bar"><span>${l}</span><i style="width:${Math.max(2,c/n*110)}px"></i><em>${c}</em></div>`;}).join('')}</div>`;
+  QS.forEach(q=>{
+    if (q.k==='email') return;
+    const vals=fb.map(d=>d.answers&&d.answers[q.k]).filter(v=>v!==undefined&&v!==''&&!(Array.isArray(v)&&!v.length));
+    if (q.t==='text'){ h+=`<div class="qq"><p>${q.q}</p>${vals.length?fb.filter(d=>d.answers&&d.answers[q.k]).map(d=>`<div class="quote">${esc(d.answers[q.k])}<small>${esc(d.name||'Anonymous')}</small></div>`).join(''):'<div class="small">No answers yet</div>'}</div>`; return; }
+    const opts=q.t==='scale'?[1,2,3,4,5]:q.o, tally={}; opts.forEach(o=>tally[o]=0);
+    vals.forEach(v=>(Array.isArray(v)?v:[v]).forEach(x=>{ if(tally[x]!==undefined) tally[x]++; }));
+    const mx=Math.max(1,...Object.values(tally));
+    const avgTxt=q.t==='scale'&&vals.length?` · average ${Math.round(vals.reduce((a,b)=>a+b,0)/vals.length*10)/10}`:'';
+    h+=`<div class="qq"><p>${q.q}<span class="small" style="font-weight:400"> (${vals.length})${avgTxt}</span></p>${opts.map(o=>`<div class="bar"><span>${o}</span><i style="width:${Math.max(2,tally[o]/mx*110)}px"></i><em>${tally[o]}</em></div>`).join('')}</div>`;
+  });
+  const byKey={}; ss.forEach(d=>(d.clicks||[]).forEach(c=>byKey[c.k]=(byKey[c.k]||0)+1));
+  const top=Object.entries(byKey).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  h+=`<div class="qq"><p>Most-tapped screens</p>${top.length?top.map(([k,v])=>`<div class="bar"><span>${keyName(k)}</span><i style="width:${Math.max(2,v/top[0][1]*110)}px"></i><em>${v}</em></div>`).join(''):'<div class="small">No taps recorded yet</div>'}</div>
+  <p class="small" style="margin-top:16px">Click through the app on the right to see the heat map for each screen. Every tester's session is saved automatically, on any device. You can also open all rows in Supabase (Table Editor → runs) and export them as CSV.</p>
+  <div class="row" style="gap:8px;margin-top:12px"><button class="btn ghost sm" onclick="loadResults()">Refresh</button><button class="btn ghost sm" onclick="logout()">Log out</button></div>`;
+  return h;
+}
+function notesHTML(){
+  const all=[]; (DATA.runs||[]).forEach(r=>(r.notes||[]).forEach(n=>all.push({...n, email:r.email})));
+  if (!all.length) return `<div class="qq"><p>Feedback per screen (0)</p><div class="small">No answers yet</div></div>`;
+  const by={}; all.forEach(n=>(by[n.k]=by[n.k]||[]).push(n));
+  const keys=Object.keys(by).sort((a,b)=>by[b].length-by[a].length);
+  return `<div class="qq"><p>Feedback per screen (${all.length})</p>${keys.map(k=>{ const list=by[k]; const c=t=>list.filter(n=>n.r===t).length;
+    return `<div class="quote"><b>${esc(keyName(k))}</b><small>${REACTS.map(([v,l])=>c(v)?`${l}: ${c(v)}`:'').filter(Boolean).join(' · ')||'Comments only'}</small>
+    ${list.filter(n=>n.c).map(n=>`<div style="margin-top:6px;font-size:13px">“${esc(n.c)}”<small>${esc(n.email||'')}</small></div>`).join('')}</div>`; }).join('')}</div>`;
+}
+function runDate(r){ const d=new Date(r.startedAt||r.at); return isNaN(d)?'':d.toLocaleString(S.lang==='de'?'de-DE':'en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }
+function runRow(r){ return { email:r.email||'', date:runDate(r), lang:(r.lang||'en').toUpperCase(), path:(r.profile&&r.profile.helperOnly)?'Community':'Investor',
+  minutes:Math.round(((r.usage&&r.usage.seconds)||0)/6)/10, taps:(r.clicks||[]).length, feedback:r.fbSent?'Yes':'No' }; }
+function testersHTML(){
+  const runs=DATA.runs||[];
+  if (!runs.length) return `<div class="qq"><p>Who tested (0)</p><div class="small">No answers yet</div></div>`;
+  return `<div class="qq"><p>Who tested (${runs.length})</p>${runs.map(r=>{ const x=runRow(r); return `<div class="quote"><b>${esc(x.email||'—')}</b><small>${esc(x.date)} · ${x.path} · ${x.minutes} min · ${x.taps} taps · ${r.fbSent?'Feedback ✓':'No feedback'} · ${x.lang}</small></div>`; }).join('')}
+    <div class="row" style="gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn ghost sm" onclick="copyEmails(this)">Copy all emails</button><button class="btn ghost sm" onclick="copyTable(this)">Copy as table</button></div></div>`;
+}
+function copyText(txt,btn){ navigator.clipboard.writeText(txt).then(()=>{ const o=btn.innerHTML; btn.textContent='Copied'; setTimeout(()=>btn.innerHTML=o,1500); },()=>{ btn.textContent='Select the text above and copy it'; }); }
+function copyEmails(btn){ copyText([...new Set((DATA.runs||[]).map(r=>r.email).filter(Boolean))].join('\n'), btn); }
+function copyTable(btn){
+  const qs=QS.filter(q=>q.t!=='email');
+  const head=['Email','Date','Language','Path','Minutes','Taps','Feedback sent',...qs.map(q=>q.q),'Screen notes'];
+  const rows=(DATA.runs||[]).map(r=>{ const x=runRow(r), a=r.answers||{}; return [x.email,x.date,x.lang,x.path,x.minutes,x.taps,x.feedback,...qs.map(q=>{ const v=a[q.k]; return Array.isArray(v)?v.join(', '):(v==null?'':String(v)); }),(r.notes||[]).map(n=>keyName(n.k)+': '+(n.r||'')+(n.c?' – '+n.c:'')).join(' | ')]; });
+  copyText([head,...rows].map(r=>r.map(c=>String(c).replace(/[\t\n]+/g,' ')).join('\t')).join('\n'), btn);
+}
+function drawHeat(){
+  if (!RESULTS) return;
+  const cv=$('heat'), ph=$('phone'), pr=ph.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  cv.width=pr.width*dpr; cv.height=pr.height*dpr; cv.style.width=pr.width+'px'; cv.style.height=pr.height+'px';
+  const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,pr.width,pr.height);
+  const k=screenKey(), pts=[]; DATA.ss.forEach(d=>(d.clicks||[]).forEach(c=>{ if(c.k===k) pts.push(c); }));
+  const scr=$('screen'), sh=$('sheet'), sTop=scr.getBoundingClientRect().top-pr.top, shTop=sh.getBoundingClientRect().top-pr.top;
+  pts.forEach(c=>{
+    const x=c.x*pr.width, y = c.m==='f' ? pr.height-c.y : c.m==='s' ? shTop+c.y-sh.scrollTop : sTop+c.y-scr.scrollTop;
+    const gr=g.createRadialGradient(x,y,0,x,y,28); gr.addColorStop(0,'rgba(224,90,67,.55)'); gr.addColorStop(1,'rgba(224,90,67,0)');
+    g.fillStyle=gr; g.beginPath(); g.arc(x,y,28,0,Math.PI*2); g.fill();
+  });
+  const nNotes=(DATA.runs||[]).reduce((a,r)=>a+(r.notes||[]).filter(n=>n.k===k).length,0);
+  $('heatTag').innerHTML=`Heat map · ${keyName(k)} · ${pts.length} taps${nNotes?' · '+nNotes+' notes':''} ${window.innerWidth<=760?'<button onclick="openSummary()">Summary</button>':''}`;
+  $('heatTag').style.pointerEvents='auto';
+}
+const SIDE0=$('side').innerHTML;
+function openSummary(){ openSheet('<div class="res">'+summaryHTML()+'</div>','results'); }
+$('screen').addEventListener('scroll', ()=>RESULTS&&drawHeat());
+$('sheet').addEventListener('scroll', ()=>RESULTS&&drawHeat());
+window.addEventListener('resize', ()=>RESULTS&&drawHeat());
+const _render=render; render=function(){ _render(); if(RESULTS){ drawHeat(); setTimeout(drawHeat,340); } };
+const _os=openSheet; openSheet=function(h,n){ _os(h,n); if(RESULTS) setTimeout(drawHeat,340); };
+const _cs=closeSheet; closeSheet=function(){ _cs(); if(RESULTS) setTimeout(drawHeat,340); };
+setTimeout(initOwner, 50);
+
+$('fbBtn').innerHTML = I('msg') + 'Feedback';
+$('fbBtn').onclick = openFeedback;
+render();
+const DE = {"Feedback on this screen": "Feedback zu diesem Screen", "How does this screen feel?": "Wie wirkt dieser Screen auf dich?", "Clear": "Klar", "Love it": "Super", "Not useful": "Nicht hilfreich", "What would you change?": "Was würdest du ändern?", "Anything that was unclear, missing or great": "Was war unklar, was fehlt, was war super?", "Send": "Senden", "Full survey": "Ganze Umfrage", "Thanks! Noted for this screen.": "Danke! Für diesen Screen notiert.", "Thoughts on this screen? Tap here anytime.": "Gedanken zu diesem Screen? Tipp jederzeit hier.", "Screen feedback": "Screen-Feedback", "Comments only": "Nur Kommentare", "No real money. The startups, people and numbers are made up. We want your honest opinion. Takes about 5 minutes.": "Kein echtes Geld. Startups, Personen und Zahlen sind erfunden. Wir wollen deine ehrliche Meinung. Dauert etwa 5 Minuten.", "Test version": "Testversion", "Invest differently": "Anders investieren", "Startups from $50 a month": "Startups ab $50 im Monat", "Start small. Think big.": "Klein anfangen. Groß denken.", "A savings plan for startups. We spread your money across many early-stage startups, picked for quality, not pedigree. We look for great founders the usual investors overlook. And you can help founders with your time, and earn credits for it.": "Ein Sparplan für Startups. Wir verteilen dein Geld auf viele junge Startups, ausgewählt nach Qualität, nicht nach Herkunft. Wir suchen starke Gründer:innen, die klassische Investoren übersehen. Und du kannst Gründer:innen mit deiner Zeit helfen und dafür Credits sammeln.", "This is a test version": "Das ist eine Testversion", "No real money. The startups, people and numbers are made up. We want your honest opinion.": "Kein echtes Geld. Startups, Personen und Zahlen sind erfunden. Wir wollen deine ehrliche Meinung.", "Your first name": "Dein Vorname", "(optional)": "(optional)", "Start": "Los geht's", "Takes about 5 minutes": "Dauert etwa 5 Minuten", "Feedback": "Feedback", "e.g. Sarah": "z. B. Sarah", "Prototype · for feedback": "Prototyp · für Feedback", "This is an early test version. Nothing here is real: no money moves, and the startups and numbers are made up.": "Das ist eine frühe Testversion. Nichts hier ist echt: Es fließt kein Geld, und Startups und Zahlen sind erfunden.", "Click around for about 5 minutes, try the": "Klick dich etwa 5 Minuten durch, probier die", "Time Bank": "Time Bank", ", then tap": " aus und tippe dann auf", "to tell us what you think.": "und sag uns deine Meinung.", "Thank you for helping us build this.": "Danke, dass du uns hilfst, das aufzubauen.", "Start over from the beginning": "Von vorne beginnen", "Start over": "Neu starten", "How much would you put in each month?": "Wie viel würdest du jeden Monat anlegen?", "You can change or pause this anytime.": "Du kannst das jederzeit ändern oder pausieren.", "In 12 months you would have invested": "In 12 Monaten hättest du investiert", "spread across 20+ startups. Startups are risky: you can lose money.": "verteilt auf über 20 Startups. Startups sind riskant: Du kannst Geld verlieren.", "Continue": "Weiter", "Not ready to invest? Join the community": "Noch nicht bereit zu investieren? Werde Teil der Community", "Help founders with your skills, earn CapSi Credits and spend them on help from other women. No money needed.": "Hilf Gründer:innen mit deinem Können, sammle CapSi Credits und lös sie für Hilfe von anderen Frauen ein. Ganz ohne Geld.", "Help founders with your skills, earn CapSi Credits, and spend them on help from other women. No money needed.": "Hilf Gründer:innen mit deinem Können, sammle CapSi Credits und lös sie für Hilfe von anderen Frauen ein. Ganz ohne Geld.", "What do you care about?": "Was ist dir wichtig?", "We'll tilt your portfolio towards these themes. Pick any.": "Wir richten dein Portfolio stärker auf diese Themen aus. Wähl beliebig viele.", "Under-the-radar founders": "Unentdeckte Gründer:innen", "Climate": "Klima", "Health": "Gesundheit", "Fintech": "Fintech", "AI": "KI", "Consumer": "Konsum", "Education": "Bildung", "Back": "Zurück", "Could you help founders with your know-how?": "Könntest du Gründer:innen mit deinem Wissen helfen?", "Founders in your portfolio post small asks: a 30-min call, a product test, an intro. Every hour of help earns you": "Gründer:innen aus deinem Portfolio posten kleine Anfragen: ein 30-Minuten-Gespräch, einen Produkttest, eine Vorstellung. Jede Stunde Hilfe bringt dir", "Founders CapSi invests in post small asks: a 30-min call, a product test, an intro. Every hour of help earns you": "Gründer:innen, in die CapSi investiert, posten kleine Anfragen: ein 30-Minuten-Gespräch, einen Produkttest, eine Vorstellung. Jede Stunde Hilfe bringt dir", "1 CapSi Credit": "1 CapSi Credit", ", which you can spend on help from other women.": ", den du für Hilfe von anderen Frauen einlösen kannst.", "Your expertise": "Deine Expertise", "Marketing": "Marketing", "Legal": "Recht", "Finance": "Finanzen", "Product": "Produkt", "Engineering": "Technik", "Sales": "Vertrieb", "HR": "HR", "Design": "Design", "Time you could give per month": "Zeit, die du pro Monat geben könntest", "Not now": "Gerade nicht", "1 hour": "1 Stunde", "2–3 hours": "2–3 Stunden", "5+ hours": "5+ Stunden", "Create my plan": "Meinen Plan erstellen", "Community membership": "Community-Mitgliedschaft", "Which skills can you offer founders?": "Welche Fähigkeiten kannst du Gründer:innen anbieten?", "Join the community": "Community beitreten", "Welcome to CapSi": "Willkommen bei CapSi", "Welcome gift:": "Willkommensgeschenk:", "1 CapSi Credit to try the Time Bank.": "1 CapSi Credit zum Ausprobieren der Time Bank.", "Remember to verify your identity before your first investment on 1 Dec.": "Denk daran, dich vor deiner ersten Investition am 1. Dez. zu verifizieren.", "To keep the test realistic, the app now shows what your plan could look like after 12 months.": "Damit der Test realistisch ist, zeigt die App jetzt, wie dein Plan nach 12 Monaten aussehen könnte.", "See my portfolio": "Mein Portfolio ansehen", "See founders who need help": "Gründer:innen ansehen, die Hilfe brauchen", "Your plan is ready.": "Dein Plan ist bereit.", "You're in the CapSi community.": "Du bist jetzt in der CapSi-Community.", "Before your first investment": "Vor deiner ersten Investition", "Let's check it's really you": "Lass uns prüfen, ob du es wirklich bist", "Every regulated investment app has to do this. It protects you and the other members.": "Jede regulierte Investment-App muss das tun. Es schützt dich und die anderen Mitglieder.", "ID check": "Ausweisprüfung", "About 2 min": "Etwa 2 Min.", "Income and experience": "Einkommen und Erfahrung", "4 questions": "4 Fragen", "Risk check": "Risikohinweis", "1 tick": "1 Haken", "Test version:": "Testversion:", "nothing is uploaded or checked. You'll just see how it would work. Please don't enter real ID numbers.": "Nichts wird hochgeladen oder geprüft. Du siehst nur, wie es funktionieren würde. Bitte gib keine echten Ausweisnummern ein.", "Start verification": "Verifizierung starten", "Do this later": "Später erledigen", "Step 1 of 3 · ID check": "Schritt 1 von 3 · Ausweisprüfung", "Which ID will you use?": "Welchen Ausweis nutzt du?", "Passport": "Reisepass", "National ID card": "Personalausweis", "Driver's licence": "Führerschein", "Photo of your ID + a selfie": "Foto deines Ausweises + ein Selfie", "In the real app your camera opens here. A licensed partner checks the photo in about a minute.": "In der echten App öffnet sich hier deine Kamera. Ein lizenzierter Partner prüft das Foto in etwa einer Minute.", "Simulate ID check": "Ausweisprüfung simulieren", "Checking your ID": "Wir prüfen deinen Ausweis", "This usually takes under a minute.": "Das dauert meist weniger als eine Minute.", "Steps 2–3 of 3 · About you": "Schritte 2–3 von 3 · Über dich", "A few questions about your finances": "Ein paar Fragen zu deinen Finanzen", "The law asks us to make sure startup investing fits your situation. Ranges are enough.": "Das Gesetz verlangt, dass wir prüfen, ob Startup-Investments zu deiner Situation passen. Spannen reichen aus.", "Yearly income": "Jahreseinkommen", "Under $50k": "Unter $50k", "$50k–124k": "$50k–124k", "$124k–200k": "$124k–200k", "$200k+": "Über $200k", "Prefer not to say": "Keine Angabe", "$124k–1M": "$124k–1 Mio.", "$1M+": "Über $1 Mio.", "Please read: you could lose all of this money": "Bitte lesen: Du könntest dieses Geld komplett verlieren", "Most startups fail, and the money is hard to get back for years. With an income under $50,000, losing it could really hurt. Only invest money you won't need, and keep an emergency fund first. Starting with $50 a month is a good way to learn.": "Die meisten Startups scheitern, und das Geld ist über Jahre schwer zurückzubekommen. Mit einem Einkommen unter $50,000 könnte ein Verlust dich wirklich treffen. Investiere nur Geld, das du nicht brauchst, und leg zuerst einen Notgroschen an. Mit $50 im Monat zu starten ist ein guter Weg, es zu lernen.", "I've read this warning, and I can afford to lose the money I invest.": "Ich habe diesen Hinweis gelesen und kann es mir leisten, das investierte Geld zu verlieren.", "Savings and investments (excluding your home)": "Ersparnisse und Anlagen (ohne dein Zuhause)", "Your yearly investment limit": "Dein jährliches Investitionslimit", "Example rules": "Beispielregeln", "Because your income or savings are under $124,000, you can invest the greater of $2,500 or 5% of the higher of the two each year.": "Weil dein Einkommen oder deine Ersparnisse unter $124,000 liegen, kannst du pro Jahr den höheren Betrag aus $2,500 oder 5 % des höheren der beiden Werte investieren.", "Because your income or savings are under $124,000, you can invest the greater of $2,500 or 5% of the higher of the two each year. Without your numbers, we use the lowest limit.": "Weil dein Einkommen oder deine Ersparnisse unter $124,000 liegen, kannst du pro Jahr den höheren Betrag aus $2,500 oder 5 % des höheren der beiden Werte investieren. Ohne deine Angaben nutzen wir das niedrigste Limit.", "Because your income and savings are both $124,000 or more, you can invest 10% of the higher of the two each year, up to $124,000.": "Weil dein Einkommen und deine Ersparnisse beide bei mindestens $124,000 liegen, kannst du pro Jahr 10 % des höheren Werts investieren, höchstens $124,000.", "Above limit": "Über dem Limit", "Within limit": "Im Limit", "Accredited investor?": "Akkreditierte Investorin?", "How limits work": "So funktionieren die Limits", "You may be accredited: check now": "Du bist vielleicht akkreditiert: jetzt prüfen", "Your investing experience": "Deine Anlageerfahrung", "I invest in ETFs or stocks": "Ich investiere in ETFs oder Aktien", "I've invested in a startup before": "Ich habe schon in ein Startup investiert", "I'm new to investing": "Ich bin neu beim Investieren", "I understand that I could lose all the money I put into startups, and that I may not be able to sell for years.": "Ich verstehe, dass ich das gesamte Geld verlieren kann, das ich in Startups stecke, und dass ich womöglich jahrelang nicht verkaufen kann.", "Finish verification": "Verifizierung abschließen", "Your plan is above your yearly limit. Lower it to continue.": "Dein Plan liegt über deinem Jahreslimit. Senk ihn, um fortzufahren.", "Limits shown follow the US crowdfunding rules (Reg CF) as an example. CapSi's final limits depend on its legal setup. Test version: your answers only help us improve the app.": "Die Limits folgen beispielhaft den US-Crowdfunding-Regeln (Reg CF). Die endgültigen Limits von CapSi hängen von der rechtlichen Struktur ab. Testversion: Deine Antworten helfen uns nur, die App zu verbessern.", "Accredited": "Akkreditiert", "No legal limit": "Kein gesetzliches Limit", "You're confirmed as an accredited investor (test version). Startups are still risky: only invest what you can afford to lose.": "Du bist als akkreditierte Investorin bestätigt (Testversion). Startups bleiben riskant: Investiere nur, was du verlieren kannst.", "Month 12 (example)": "Monat 12 (Beispiel)", "Your plan": "Dein Plan", "Change": "Ändern", "3 founders need your help": "3 Gründer:innen brauchen deine Hilfe", "Earn credits in the Time Bank": "Sammle Credits in der Time Bank", "Your startups": "Deine Startups", "Under the radar": "Unentdeckt", "Sample portfolio for testing. Values are examples only.": "Beispielportfolio zum Testen. Alle Werte sind nur Beispiele.", "Portfolio": "Portfolio", "Learn": "Lernen", "Me": "Ich", "Home": "Start", "Verify your identity": "Verifiziere dich", "Needed before your first investment": "Nötig vor deiner ersten Investition", "Seed": "Seed", "Pre-seed": "Pre-Seed", "Series A": "Series A", "Munich": "München", "Berlin": "Berlin", "Amsterdam": "Amsterdam", "Austin": "Austin", "London": "London", "New York": "New York", "Venture Academy": "Venture Academy", "Short lessons on how startup investing works. No jargon.": "Kurze Lektionen, wie Startup-Investieren funktioniert. Ohne Fachchinesisch.", "LIVE · THU 6 PM": "LIVE · DO 18 UHR", "Startup Investing 101": "Startup-Investieren 101", "45-min webinar with a VC partner and a founder. Free.": "45-Minuten-Webinar mit einer VC-Partnerin und einer Gründerin. Kostenlos.", "Save my seat": "Platz reservieren", "Lessons": "Lektionen", "What is a valuation?": "Was ist eine Bewertung?", "Why a portfolio beats one bet": "Warum ein Portfolio eine Einzelwette schlägt", "What dilution means": "Was Verwässerung bedeutet", "The risks, honestly": "Die Risiken, ganz ehrlich", "How much can I invest each year?": "Wie viel kann ich pro Jahr investieren?", "How cash-out works (the 5% rule)": "So funktioniert die Auszahlung (die 5-%-Regel)", "A valuation is what a startup is worth on paper when it raises money. If a startup is valued at $10M and you put in $100, you own 0.001%. Early valuations are guesses, so they move a lot.": "Die Bewertung ist das, was ein Startup bei einer Finanzierungsrunde auf dem Papier wert ist. Wird ein Startup mit $10 Mio. bewertet und du steckst $100 hinein, gehören dir 0,001 %. Frühe Bewertungen sind Schätzungen, deshalb schwanken sie stark.", "Most startups fail. A few grow very large. If you own small pieces of many, one big winner can make up for many losses. That is why CapSi spreads every plan across many startups.": "Die meisten Startups scheitern. Einige wenige werden sehr groß. Wenn dir kleine Teile von vielen gehören, kann ein großer Gewinner viele Verluste ausgleichen. Deshalb verteilt CapSi jeden Plan auf viele Startups.", "When a startup raises more money, it issues new shares. Your share gets smaller, but if the company is worth more, your piece can still be worth more.": "Wenn ein Startup neues Geld aufnimmt, gibt es neue Anteile aus. Dein Anteil wird kleiner, aber wenn das Unternehmen mehr wert ist, kann dein Stück trotzdem mehr wert sein.", "Startup investing is risky. You can lose the money you put in, and you usually cannot sell quickly. Only invest money you will not need for years.": "Startup-Investieren ist riskant. Du kannst dein eingesetztes Geld verlieren und meist nicht schnell verkaufen. Investiere nur Geld, das du jahrelang nicht brauchst.", "US rules protect everyday investors with a yearly limit on startup investing.": "US-Regeln schützen Privatanleger:innen mit einem jährlichen Limit für Startup-Investments.", "If your income or your net worth is under $124,000:": "Wenn dein Einkommen oder dein Nettovermögen unter $124,000 liegt:", "you can invest the greater of $2,500 or 5% of the higher of the two each year.": "Du kannst pro Jahr den höheren Betrag aus $2,500 oder 5 % des höheren der beiden Werte investieren.", "If both are $124,000 or more:": "Wenn beide bei mindestens $124,000 liegen:", "you can invest 10% of the higher of the two, up to $124,000 a year.": "Du kannst 10 % des höheren Werts investieren, höchstens $124,000 pro Jahr.", "Accredited investors": "Akkreditierte Investor:innen", "(over $200,000 income, or $300,000 with a partner, in each of the last 2 years; or over $1 million net worth without your home; or a Series 7, 65 or 82 license) have no limit.": "(über $200,000 Einkommen, oder $300,000 mit Partner:in, in jedem der letzten 2 Jahre; oder über $1 Mio. Nettovermögen ohne dein Zuhause; oder eine Series-7-, -65- oder -82-Lizenz) haben kein Limit.", "CapSi adds one more step:": "CapSi geht noch einen Schritt weiter:", "if you earn under $50,000, we show you a clear warning first, because losing this money could really hurt.": "Wenn du unter $50,000 verdienst, zeigen wir dir zuerst einen deutlichen Warnhinweis, weil ein Verlust dich wirklich treffen könnte.", "These are the US crowdfunding rules, used as an example. CapSi's final rules depend on its legal setup.": "Das sind die US-Crowdfunding-Regeln als Beispiel. Die endgültigen Regeln von CapSi hängen von der rechtlichen Struktur ab.", "Once a year you can ask to take out all or part of your money. Request by 31 Dec, and the value is fixed on that day.": "Einmal im Jahr kannst du dein ganzes Geld oder einen Teil davon zurückfordern. Stell den Antrag bis zum 31. Dez.; an diesem Tag wird der Wert festgelegt.", "Why there is a limit:": "Warum es ein Limit gibt:", "startups can't pay money back quickly. So each year CapSi pays out up to 5% of all members' money. This protects the startups and everyone who stays invested.": "Startups können Geld nicht schnell zurückzahlen. Deshalb zahlt CapSi pro Jahr bis zu 5 % des Geldes aller Mitglieder aus. Das schützt die Startups und alle, die investiert bleiben.", "Under 5%:": "Unter 5 %:", "Over 5%:": "Über 5 %:", "everyone who asked is paid in full by 31 Jan.": "Alle, die es beantragt haben, werden bis zum 31. Jan. vollständig ausgezahlt.", "everyone gets the same share now, and the rest in the next window(s), until you have all of it back.": "Alle bekommen jetzt den gleichen Anteil und den Rest im nächsten Zeitfenster, bis du alles zurück hast.", "Example:": "Beispiel:", "if requests add up to 10% of the fund, you get half in January and the other half the year after.": "Summieren sich die Anträge auf 10 % des Fonds, bekommst du die Hälfte im Januar und die andere Hälfte im Jahr darauf.", "Got it": "Verstanden", "Your account": "Dein Konto", "Your profile": "Dein Profil", "Change plan": "Plan ändern", "Monthly amount": "Monatlicher Betrag", "Themes": "Themen", "Balanced": "Ausgewogen", "Next investment": "Nächste Investition", "1 Dec": "1. Dez.", "Switch to community only (stop investing)": "Nur Community (nicht mehr investieren)", "Personal details": "Persönliche Angaben", "Edit": "Bearbeiten", "Name": "Name", "Not set": "Nicht angegeben", "Email": "E-Mail", "Expertise": "Expertise", "Time for founders": "Zeit für Gründer:innen", "Verification": "Verifizierung", "Update": "Aktualisieren", "Identity": "Identität", "Verified": "Verifiziert", "Savings and investments": "Ersparnisse und Anlagen", "Accredited investor": "Akkreditierte Investorin", "Check": "Prüfen", "Yearly investment limit": "Jährliches Investitionslimit", "No legal limit (accredited)": "Kein gesetzliches Limit (akkreditiert)", "Cash out": "Auszahlung", "Request cash-out": "Auszahlung beantragen", "Cash-out window": "Auszahlungsfenster", "Once a year": "Einmal im Jahr", "Next payout": "Nächste Auszahlung", "By 31 Jan 2027": "Bis 31. Jan. 2027", "Request by": "Antrag bis", "31 Dec 2026": "31. Dez. 2026", "Yearly limit": "Jahreslimit", "5% of the fund, rest paid next window": "5 % des Fonds, Rest im nächsten Fenster", "Fees": "Gebühren", "On each deposit": "Pro Einzahlung", "Yearly management": "Jährliche Verwaltung", "Badges": "Abzeichen", "First help": "Erste Hilfe", "Beta tester": "Beta-Testerin", "Connector": "Netzwerkerin", "Learner": "Lernende", "3-month streak": "3 Monate am Stück", "Give feedback on this app": "Feedback zu dieser App geben", "Start over from the beginning ": "Von vorne beginnen", "Membership": "Mitgliedschaft", "Type": "Art", "Community member (no investing)": "Community-Mitglied (ohne Investment)", "Credits": "Credits", "You can switch": "Wechsel möglich", "Invest from $50 a month any time": "Jederzeit ab $50 im Monat investieren", "Paused": "Pausiert", "Verify now": "Jetzt verifizieren", "Help a founder today. Get help tomorrow.": "Hilf heute einer Gründerin. Bekomm morgen selbst Hilfe.", "Your credits": "Deine Credits", "Level": "Level", "Helper": "Helper", "Trusted Helper": "Trusted Helper", "Expert Circle": "Expert Circle", "Top level reached": "Höchstes Level erreicht", "1 hour of help = 1 credit, whoever gives it. Credits can't be cashed out and don't change your investment.": "1 Stunde Hilfe = 1 Credit, egal wer hilft. Credits können nicht ausgezahlt werden und verändern dein Investment nicht.", "Earn": "Sammeln", "Spend": "Einlösen", "Community": "Community", "Asks from founders in your portfolio.": "Anfragen von Gründer:innen aus deinem Portfolio.", "Asks from founders in your portfolio, matched to your skills first.": "Anfragen von Gründer:innen aus deinem Portfolio, passend zu deinen Fähigkeiten zuerst.", "Asks from founders CapSi invests in.": "Anfragen von Gründer:innen, in die CapSi investiert.", "Asks from founders CapSi invests in, matched to your skills first.": "Anfragen von Gründer:innen, in die CapSi investiert, passend zu deinen Fähigkeiten zuerst.", "30-min call: how do hospital buyers decide?": "30-Minuten-Gespräch: Wie entscheiden Einkäufer:innen im Krankenhaus?", "I can help": "Ich kann helfen", "Matches your skills": "Passt zu deinen Fähigkeiten", "Test our new app and share feedback": "Teste unsere neue App und gib Feedback", "User interview: how do you shop for kids' clothes?": "Nutzerinterview: Wie kaufst du Kinderkleidung?", "Intro to an accountant who works with freelancers": "Kontakt zu einer Steuerberaterin für Freiberufler:innen", "Review our pricing page with a marketer's eye": "Prüf unsere Preisseite mit Marketing-Blick", "Advice on hiring our first engineers in Germany": "Rat zur Einstellung unserer ersten Entwickler:innen in Deutschland", "Help offered by other women in the CapSi community.": "Hilfe, die andere Frauen in der CapSi-Community anbieten.", "30-min contract review": "30-Minuten-Vertragscheck", "Request": "Anfragen", "Requested": "Angefragt", "LinkedIn and personal brand review": "Check für LinkedIn und Personal Brand", "Salary negotiation prep": "Vorbereitung auf Gehaltsverhandlung", "Feedback on your own pitch deck": "Feedback zu deinem eigenen Pitch Deck", "Founder office hours (group)": "Founder Office Hours (Gruppe)", "Seat at the CapSi dinner in Berlin": "Platz beim CapSi-Dinner in Berlin", "Anna, lawyer": "Anna, Anwältin", "Mia, growth marketer": "Mia, Growth-Marketerin", "Priya, HR director": "Priya, HR-Direktorin", "Lena, VC associate": "Lena, VC-Associate", "Sara, CEO of Tallyo": "Sara, CEO von Tallyo", "Career": "Karriere", "Startup": "Startup", "Founders": "Gründer:innen", "Events": "Events", "This month, CapSi members gave": "Diesen Monat haben CapSi-Mitglieder geschenkt", "1,240 hours": "1.240 Stunden", "to 86 startups": "an 86 Startups", "Top helpers this month": "Top-Helferinnen diesen Monat", "You": "Du", "Showing your name here would be optional.": "Dein Name würde hier nur angezeigt, wenn du willst.", "Your badges": "Deine Abzeichen", "You're a CapSi community member": "Du bist CapSi-Community-Mitglied", "You don't invest money. You help founders with your skills, earn credits, and use them for help from other women.": "Du investierst kein Geld. Du hilfst Gründer:innen mit deinem Können, sammelst Credits und löst sie für Hilfe von anderen Frauen ein.", "Hours given": "Geschenkte Stunden", "Startups you can help": "Startups, denen du helfen kannst", "Want to invest later?": "Später investieren?", "You can start a plan from $50 a month whenever you're ready. Your credits and badges stay.": "Du kannst jederzeit einen Plan ab $50 im Monat starten. Deine Credits und Abzeichen bleiben.", "Start investing": "Jetzt investieren", "Sample startups for testing.": "Beispiel-Startups zum Testen.", "Sample": "Beispiel", "Your share": "Dein Anteil", "Round": "Runde", "Valuation": "Bewertung", "The founders": "Die Gründer:innen", "Why we invested": "Warum wir investiert haben", "Main risk": "Hauptrisiko", "Founder update · last week": "Update der Gründer:innen · letzte Woche", "Helps hospitals order medical supplies without paperwork.": "Hilft Krankenhäusern, medizinisches Material ohne Papierkram zu bestellen.", "A former ICU nurse and a self-taught developer. First-time founders with no investor network.": "Eine ehemalige Intensivpflegerin und ein Entwickler, der sich alles selbst beigebracht hat. Erstgründer:innen ohne Investorennetzwerk.", "Hospitals lose hours every week to manual ordering. Medora already runs in 6 clinics.": "Krankenhäuser verlieren jede Woche Stunden durch manuelles Bestellen. Medora läuft bereits in 6 Kliniken.", "Hospital sales cycles are slow.": "Verkaufszyklen in Krankenhäusern sind lang.", "Signed clinic #6 in Munich. Hiring a sales lead.": "Klinik Nr. 6 in München gewonnen. Sucht eine Vertriebsleitung.", "Lets people rent and resell kids' clothes in one app.": "Damit kann man Kinderkleidung in einer App mieten und weiterverkaufen.", "Two parents who started it from their kitchen table, with no startup background.": "Zwei Eltern, die am Küchentisch angefangen haben, ohne Startup-Erfahrung.", "Parents buy clothes that fit for 3 months. Loopwear keeps them in use for years.": "Eltern kaufen Kleidung, die 3 Monate passt. Loopwear hält sie jahrelang in Gebrauch.", "Logistics costs must stay low.": "Die Logistikkosten müssen niedrig bleiben.", "2,000 families on the waitlist. Testing in 2 cities.": "2.000 Familien auf der Warteliste. Test in 2 Städten.", "Software that tells home batteries when to charge and sell power.": "Software, die Heimspeichern sagt, wann sie laden und Strom verkaufen sollen.", "Battery engineers who built energy software at large utilities.": "Batterie-Ingenieure, die Energiesoftware bei großen Versorgern gebaut haben.", "Home batteries are spreading fast. Most sit idle most of the day.": "Heimspeicher verbreiten sich schnell. Die meisten stehen den Großteil des Tages ungenutzt da.", "Depends on energy market rules.": "Hängt von den Regeln des Energiemarkts ab.", "Partnership with a utility in Texas.": "Partnerschaft mit einem Versorger in Texas.", "Bookkeeping that runs itself for freelancers.": "Buchhaltung, die sich für Freiberufler:innen von selbst erledigt.", "A freelance bookkeeper who taught herself to code. No elite university, no big-name employer.": "Eine freiberufliche Buchhalterin, die sich das Programmieren selbst beigebracht hat. Keine Elite-Uni, kein großer Name im Lebenslauf.", "Freelancers hate taxes. Tallyo has 40,000 paying users.": "Freiberufler:innen hassen Steuern. Tallyo hat 40.000 zahlende Nutzer:innen.", "Big banks could copy it.": "Große Banken könnten es kopieren.", "Launched in Germany. Revenue up 3x this year.": "Start in Deutschland. Umsatz dieses Jahr verdreifacht.", "Virtual care for women in menopause.": "Virtuelle Versorgung für Frauen in den Wechseljahren.", "A gynaecologist and a second-time founder.": "Eine Gynäkologin und eine Seriengründerin.", "Millions of women get little support. Doctors on Nurtura are specialists.": "Millionen Frauen bekommen kaum Unterstützung. Die Ärzt:innen bei Nurtura sind Spezialist:innen.", "Health rules differ by US state.": "Gesundheitsregeln unterscheiden sich je nach US-Bundesstaat.", "First 500 patients. Looking for beta testers.": "Die ersten 500 Patientinnen. Sucht Beta-Testerinnen.", "AI that spots crop disease from drone photos.": "KI, die Pflanzenkrankheiten auf Drohnenfotos erkennt.", "A farmer's son and an agronomist, building far from the usual tech hubs.": "Ein Bauernsohn und eine Agrarwissenschaftlerin, die fernab der üblichen Tech-Hubs bauen.", "Farmers lose up to a fifth of crops to disease found too late.": "Landwirt:innen verlieren bis zu einem Fünftel der Ernte durch zu spät entdeckte Krankheiten.", "Hardware partners needed.": "Hardware-Partner nötig.", "Pilot with 40 farms in Bavaria.": "Pilot mit 40 Höfen in Bayern.", "Pick a time": "Wähl einen Termin", "Tue 10:00": "Di 10:00", "Tue 17:30": "Di 17:30", "Wed 12:00": "Mi 12:00", "Thu 18:00": "Do 18:00", "The founder confirms after you've helped. Then your credit is added.": "Die Gründerin bestätigt, nachdem du geholfen hast. Dann wird dir dein Credit gutgeschrieben.", "Confirm": "Bestätigen", "Not now ": "Gerade nicht", "You'll get a test link. Try the app for 20 minutes, then answer 5 questions.": "Du bekommst einen Testlink. Probier die App 20 Minuten aus und beantworte dann 5 Fragen.", "Who could you introduce?": "Wen könntest du vorstellen?", "Name or role (optional)": "Name oder Rolle (optional)", "Cost": "Kosten", "Your balance": "Dein Guthaben", "What do you need help with?": "Wobei brauchst du Hilfe?", "Not enough credits yet": "Noch nicht genug Credits", "Earn credits": "Credits sammeln", "Cancel": "Abbrechen", "Your feedback": "Dein Feedback", "Honest answers help most. About 2 minutes.": "Ehrliche Antworten helfen am meisten. Etwa 2 Minuten.", "How easy was the app to understand?": "Wie leicht war die App zu verstehen?", "Confusing": "Verwirrend", "Very clear": "Sehr klar", "Would you invest $50+ a month with an app like this?": "Würdest du mit so einer App $50 oder mehr im Monat investieren?", "Yes": "Ja", "Maybe": "Vielleicht", "No": "Nein", "How much would you realistically put in each month?": "Wie viel würdest du realistisch jeden Monat anlegen?", "How did the ID and income check feel?": "Wie fühlte sich die Ausweis- und Einkommensprüfung an?", "Fine, I expect it": "Okay, das erwarte ich", "A bit annoying": "Etwas lästig", "It would stop me": "Das würde mich abhalten", "I skipped it": "Ich habe sie übersprungen", "How often would you want to be able to cash out?": "Wie oft würdest du dir Geld auszahlen lassen wollen?", "Once a year is fine": "Einmal im Jahr reicht", "Every 3 months": "Alle 3 Monate", "Any time": "Jederzeit", "Would the 5% yearly cash-out limit worry you?": "Würde dich das jährliche Auszahlungslimit von 5 % beunruhigen?", "No, it makes sense": "Nein, das ergibt Sinn", "A little": "Ein bisschen", "Yes, it would stop me": "Ja, das würde mich abhalten", "Would you help founders with your time in return for credits?": "Würdest du Gründer:innen mit deiner Zeit helfen und dafür Credits bekommen?", "What would motivate you most to help? (pick up to 2)": "Was würde dich am meisten motivieren zu helfen? (bis zu 2)", "Credits to get help myself": "Credits, um selbst Hilfe zu bekommen", "Badges and levels": "Abzeichen und Levels", "Backing overlooked founders": "Übersehene Gründer:innen unterstützen", "Learning from startups": "Von Startups lernen", "Networking": "Netzwerken", "Nothing, I'd just invest": "Nichts, ich würde nur investieren", "What would you spend credits on?": "Wofür würdest du Credits einlösen?", "Legal advice": "Rechtsberatung", "Marketing help": "Marketing-Hilfe", "Career advice": "Karriereberatung", "Pitch or business feedback": "Feedback zu Pitch oder Geschäft", "Founder office hours": "Founder Office Hours", "How do you feel about the \"Top helpers\" ranking?": "Wie findest du das Ranking der „Top-Helferinnen“?", "I like it": "Gefällt mir", "Neutral": "Neutral", "I don't like it": "Gefällt mir nicht", "What would you need to trust CapSi with your money?": "Was bräuchtest du, um CapSi dein Geld anzuvertrauen?", "Anything confusing, missing or that you loved?": "Was war verwirrend, was fehlt, was hat dir gefallen?", "Email for early access (optional)": "E-Mail für frühen Zugang (optional)", "Send feedback": "Feedback senden", "you@example.com": "du@beispiel.de", "Almost done": "Fast geschafft", "We couldn't reach our database just now. Please copy your answers and send them to Maide by WhatsApp or email.": "Hier konnten wir nicht automatisch speichern. Bitte kopier deine Antworten und schick sie Maide per WhatsApp oder E-Mail.", "Copy my answers": "Meine Antworten kopieren", "Copied": "Kopiert", "Select the text above and copy it": "Markier den Text oben und kopier ihn", "Thank you": "Danke", "Your feedback is saved. It really helps us build CapSi the right way.": "Dein Feedback ist gespeichert. Es hilft uns sehr, CapSi richtig aufzubauen.", "Try another path from the start": "Einen anderen Weg von vorne ausprobieren", "Your answers are saved. You can close this page.": "Deine Antworten sind gespeichert. Du kannst diese Seite schließen.", "Saving…": "Wird gespeichert…", "Change your plan": "Plan ändern", "Or your own amount (min. $50)": "Oder dein eigener Betrag (mind. $50)", "Pause my plan": "Plan pausieren", "No new investments until you resume. You keep what you own.": "Keine neuen Investitionen, bis du fortsetzt. Was du besitzt, behältst du.", "Save changes": "Änderungen speichern", "e.g. 150": "z. B. 150", "Pause plan": "Plan pausieren", "The minimum is $50 a month.": "Das Minimum sind $50 im Monat.", "Edit your details": "Angaben bearbeiten", "First name": "Vorname", "Founders' asks that match these show up first.": "Anfragen, die dazu passen, siehst du zuerst.", "Please check the email address.": "Bitte prüf die E-Mail-Adresse.", "Accredited investor check": "Prüfung: akkreditierte Investorin", "Are you an accredited investor?": "Bist du akkreditierte Investorin?", "US rules have no yearly limit for accredited investors. You qualify if one of these is true.": "Für akkreditierte Investor:innen gibt es in den USA kein Jahreslimit. Du giltst als akkreditiert, wenn eines davon zutrifft.", "Income": "Einkommen", "I earned over $200,000 in each of the last 2 years (or over $300,000 together with my spouse or partner), and expect the same this year.": "Ich habe in jedem der letzten 2 Jahre über $200,000 verdient (oder über $300,000 gemeinsam mit Ehe- oder Lebenspartner:in) und erwarte dasselbe dieses Jahr.", "Net worth": "Nettovermögen", "My net worth is over $1 million, alone or with my spouse or partner, not counting my home.": "Mein Nettovermögen liegt über $1 Mio., allein oder mit Ehe- oder Lebenspartner:in, ohne mein Zuhause.", "License": "Lizenz", "I hold a Series 7, 65 or 82 license in good standing.": "Ich habe eine gültige Series-7-, -65- oder -82-Lizenz.", "None": "Nichts davon", "None of these apply to me.": "Nichts davon trifft auf mich zu.", "How we'd confirm it:": "So würden wir es bestätigen:", "Tax returns or W-2s for the last 2 years, or a letter from your accountant or lawyer. Depending on CapSi's legal setup, we may need this proof before lifting your limit.": "Steuerbescheide oder W-2-Formulare der letzten 2 Jahre oder ein Schreiben deiner Steuerberatung oder Anwältin. Je nach rechtlicher Struktur von CapSi brauchen wir diesen Nachweis, bevor wir dein Limit aufheben.", "Recent bank and brokerage statements, or a letter from your accountant or lawyer. Depending on CapSi's legal setup, we may need this proof before lifting your limit.": "Aktuelle Bank- und Depotauszüge oder ein Schreiben deiner Steuerberatung oder Anwältin. Je nach rechtlicher Struktur von CapSi brauchen wir diesen Nachweis, bevor wir dein Limit aufheben.", "A quick check of your license number in FINRA BrokerCheck. Depending on CapSi's legal setup, we may need this proof before lifting your limit.": "Eine kurze Prüfung deiner Lizenznummer in FINRA BrokerCheck. Je nach rechtlicher Struktur von CapSi brauchen wir diesen Nachweis, bevor wir dein Limit aufheben.", "Test version: nothing is uploaded.": "Testversion: Nichts wird hochgeladen.", "Simulate confirmation": "Bestätigung simulieren", "No problem. Most members aren't accredited. Your yearly limit stays as it is, and you can still start with $50 a month.": "Kein Problem. Die meisten Mitglieder sind nicht akkreditiert. Dein Jahreslimit bleibt, und du kannst trotzdem mit $50 im Monat starten.", "OK": "OK", "Go back to the beginning?": "Zurück zum Anfang?", "This clears your choices in this test, so you can try a different path, for example joining the community without investing.": "Das löscht deine Auswahl in diesem Test, damit du einen anderen Weg ausprobieren kannst, zum Beispiel der Community ohne Investment beizutreten.", "Feedback you already sent stays saved.": "Bereits gesendetes Feedback bleibt gespeichert.", "Yearly cash-out": "Jährliche Auszahlung", "Take your money out": "Geld auszahlen lassen", "Once a year, you can ask to cash out all or part of your portfolio. You always get all of it back, but if many members cash out in the same year it can come in parts.": "Einmal im Jahr kannst du dein ganzes Portfolio oder einen Teil davon auszahlen lassen. Du bekommst immer alles zurück, aber wenn viele Mitglieder im selben Jahr auszahlen, kann es in Teilen kommen.", "Your portfolio today (example)": "Dein Portfolio heute (Beispiel)", "The final amount is set on 31 Dec 2026 and can be higher or lower.": "Der endgültige Betrag wird am 31. Dez. 2026 festgelegt und kann höher oder niedriger sein.", "How much?": "Wie viel?", "Everything": "Alles", "Part of it": "Einen Teil", "Choose an amount": "Betrag wählen", "Also stop my monthly plan": "Auch meinen Monatsplan stoppen", "You can restart it any time.": "Du kannst ihn jederzeit neu starten.", "How it works": "So funktioniert's", "Request sent": "Antrag gesendet", "Today": "Heute", "Value is fixed": "Wert wird festgelegt", "Paid to your bank": "Auszahlung auf dein Konto", "By 31 Jan 2027: everything, or a first part if the 5% limit is reached": "Bis 31. Jan. 2027: alles, oder ein erster Teil, wenn das 5-%-Limit erreicht ist", "Any rest": "Ein möglicher Rest", "Paid in the next window(s), until you have it all back": "Wird im nächsten Fenster ausgezahlt, bis du alles zurück hast", "The 5% yearly limit": "Das jährliche 5-%-Limit", "Example": "Beispiel", "Each year, CapSi pays out up to 5% of all members' money. This protects the startups and everyone who stays invested.": "CapSi zahlt pro Jahr bis zu 5 % des Geldes aller Mitglieder aus. Das schützt die Startups und alle, die investiert bleiben.", "Requests so far this year": "Anträge bisher in diesem Jahr", "1.8% of 5%": "1,8 % von 5 %", "everyone is paid in full by 31 Jan.": "Alle werden bis zum 31. Jan. vollständig ausgezahlt.", "everyone gets the same share now, and the rest in the next window(s). Example: if requests add up to 10%, you get half now and half next year.": "Alle bekommen jetzt den gleichen Anteil und den Rest im nächsten Fenster. Beispiel: Summieren sich die Anträge auf 10 %, bekommst du jetzt die Hälfte und nächstes Jahr die andere Hälfte.", "How cash-out works": "So funktioniert die Auszahlung", "Stop monthly plan": "Monatsplan stoppen", "Amount in $ (min. $50)": "Betrag in $ (mind. $50)", "Check and confirm": "Prüfen und bestätigen", "Your cash-out request": "Dein Auszahlungsantrag", "Amount": "Betrag", "Paid to": "Auszahlung an", "Your bank account •••• 4821": "Dein Bankkonto •••• 4821", "Monthly plan": "Monatsplan", "Stops now": "Stoppt jetzt", "Continues": "Läuft weiter", "Credits and badges": "Credits und Abzeichen", "You keep them": "Bleiben dir", "Money arrives": "Geld kommt an", "By 31 Jan 2027, in full if the 5% limit isn't reached": "Bis 31. Jan. 2027, vollständig, wenn das 5-%-Limit nicht erreicht ist", "Not guaranteed in one go.": "Nicht garantiert in einem Schritt.", "CapSi pays out up to 5% of all members' money each year. If requests go over that, you get a share now and the rest in the next window(s), until you have all of it. We'll tell you before 31 Dec how much comes in January.": "CapSi zahlt pro Jahr bis zu 5 % des Geldes aller Mitglieder aus. Liegen die Anträge darüber, bekommst du jetzt einen Teil und den Rest im nächsten Fenster, bis du alles hast. Wir sagen dir vor dem 31. Dez., wie viel im Januar kommt.", "I understand that cash-outs are limited to 5% of the fund each year, so my money may come back in parts, and that the final amount is set on 31 Dec 2026 and can be higher or lower than today.": "Ich verstehe, dass Auszahlungen auf 5 % des Fonds pro Jahr begrenzt sind, mein Geld also in Teilen zurückkommen kann, und dass der endgültige Betrag am 31. Dez. 2026 festgelegt wird und höher oder niedriger als heute sein kann.", "Request received": "Antrag eingegangen", "We've got your cash-out request": "Wir haben deinen Auszahlungsantrag", "You can cancel until 31 Dec 2026 in the Me tab.": "Du kannst bis zum 31. Dez. 2026 im Tab „Ich“ stornieren.", "Back to my account": "Zurück zu meinem Konto", "Cash-out requested": "Auszahlung beantragt", "Everything · first payout by 31 Jan": "Alles · erste Auszahlung bis 31. Jan.", "Cash-out request cancelled": "Auszahlungsantrag storniert", "Confirmed: no yearly limit applies": "Bestätigt: Es gilt kein Jahreslimit", "Details saved": "Angaben gespeichert", "Lesson done": "Lektion erledigt", "You are now a community member": "Du bist jetzt Community-Mitglied", "You're verified": "Du bist verifiziert", "You're on the list for Thursday": "Du stehst auf der Liste für Donnerstag", "Your plan is paused": "Dein Plan ist pausiert", "Plan saved": "Plan gespeichert", "Results": "Ergebnisse", "Exit results": "Ergebnisse schließen", "Heat map": "Heatmap", "Summary": "Übersicht", "Results · owner only": "Ergebnisse · nur für dich", "What testers said": "Was die Testerinnen sagen", "testers": "Testerinnen", "sent feedback": "haben Feedback gesendet", "avg. minutes": "Ø Minuten", "taps recorded": "Taps erfasst", "How far people got": "Wie weit Testerinnen kamen", "Started setup": "Einrichtung begonnen", "Joined community only": "Nur Community beigetreten", "Community member started investing": "Community-Mitglied investiert jetzt", "Verified identity": "Identität verifiziert", "Chose \"later\"": "„Später“ gewählt", "Opened accredited check": "Akkreditierungsprüfung geöffnet", "Confirmed accredited": "Akkreditierung bestätigt", "Plan was above limit": "Plan über dem Limit", "Lowered plan to limit": "Plan aufs Limit gesenkt", "Reached the app": "App erreicht", "Opened Time Bank": "Time Bank geöffnet", "Helped a founder": "Einer Gründerin geholfen", "Spent credits": "Credits eingelöst", "Opened cash-out": "Auszahlung geöffnet", "Requested cash-out": "Auszahlung beantragt", "Opened feedback": "Feedback geöffnet", "Most-tapped screens": "Meistgetippte Screens", "Click through the app on the right to see the heat map for each screen. Only testers signed in to Claude with Contributor access are saved automatically.": "Klick dich rechts durch die App, um für jeden Screen die Heatmap zu sehen. Automatisch gespeichert werden nur Testerinnen, die bei Claude angemeldet sind und Contributor-Zugriff haben.", "Refresh": "Aktualisieren", "Couldn't load results right now. Try again in a minute.": "Ergebnisse konnten gerade nicht geladen werden. Versuch es in einer Minute noch einmal.", "No answers yet": "Noch keine Antworten", "No taps recorded yet": "Noch keine Taps erfasst", "Loading answers…": "Antworten werden geladen…", "Welcome": "Willkommen", "Setup: amount": "Einrichtung: Betrag", "Setup: themes": "Einrichtung: Themen", "Setup: expertise": "Einrichtung: Expertise", "Plan ready": "Plan bereit", "Time Bank · Earn": "Time Bank · Sammeln", "Time Bank · Spend": "Time Bank · Einlösen", "Time Bank · Community": "Time Bank · Community", "Startup detail": "Startup-Details", "Help a founder": "Einer Gründerin helfen", "Request help": "Hilfe anfragen", "Lesson": "Lektion", "Feedback form": "Feedback-Formular", "Popup": "Popup", "Edit details": "Angaben bearbeiten", "Verification intro": "Verifizierung: Start", "Checking ID": "Ausweis wird geprüft", "Income and risk": "Einkommen und Risiko", "Cash-out: amount": "Auszahlung: Betrag", "Cash-out: confirm": "Auszahlung: Bestätigen", "Cash-out: done": "Auszahlung: Fertig", "Accredited check": "Akkreditierungsprüfung", "Early-access emails": "E-Mails für frühen Zugang", "Language": "Sprache", "Your email": "Deine E-Mail", "We only use it to follow up on this test. Only the CapSi team can see it.": "Wir nutzen sie nur, um dich zu diesem Test zu kontaktieren. Nur das CapSi-Team kann sie sehen.", "Please enter a valid email to start.": "Bitte gib eine gültige E-Mail ein, um zu starten.", "Can we email you about early access?": "Dürfen wir dir zum frühen Zugang schreiben?", "Copy all emails": "Alle E-Mails kopieren", "Copy as table": "Als Tabelle kopieren", "Investor": "Investorin", "No feedback": "Kein Feedback", "Feedback ✓": "Feedback ✓", "Click through the app on the right to see the heat map for each screen. Saved automatically: tests on your own device while you're signed in to Claude, and testers you added as Contributors. Everyone else can copy their answers and send them to you.": "Klick dich rechts durch die App, um für jeden Screen die Heatmap zu sehen. Automatisch gespeichert werden Tests auf deinem eigenen Gerät, während du bei Claude angemeldet bist, und Testerinnen, die du als Contributor hinzugefügt hast. Alle anderen können ihre Antworten kopieren und dir schicken.", "What CapSi is": "Was CapSi ist", "A savings plan for startups": "Ein Sparplan für Startups", "Like an ETF savings plan, but for young companies before they go public.": "Wie ein ETF-Sparplan, nur für junge Unternehmen vor dem Börsengang.", "From $50 a month": "Ab $50 im Monat", "Spread across 20+ startups, so one failure doesn't sink you.": "Verteilt auf 20+ Startups, ein Ausfall wirft dich nicht um.", "Not crowdfunding": "Kein Crowdfunding", "Experienced investors check and select every deal for you.": "Erfahrene Investor:innen prüfen und wählen jeden Deal für dich aus.", "One line on the cap table": "Eine Zeile im Cap Table", "We pool everyone's money, so the best founders say yes to us.": "Wir bündeln das Geld aller, damit die besten Gründer:innen Ja zu uns sagen.", "Who runs it": "Wer dahinter steht", "People who do this for a living": "Profis am Steuer", "Founder": "Gründerin", "Interviewed 150+ women before building CapSi.": "Hat vor dem Start mit über 150 Frauen gesprochen.", "Investment lead": "Investment Lead", "Ex-VC partner, 10+ years in early-stage.": "Ex-VC-Partnerin, 10+ Jahre Frühphase.", "Legal and compliance": "Recht und Compliance", "Regulated partner, keeps every pool compliant.": "Regulierter Partner für jeden Pool.", "A committee approves every deal": "Ein Komitee gibt jeden Deal frei", "VCs and women angels who invest their own money too.": "VCs und Angels, die selbst mitinvestieren.", "Who we invest with": "Mit wem wir investieren", "Names once signed": "Namen folgen", "We never invest alone": "Wir investieren nie allein", "Every startup has a lead investor who did the full checks. We join on the same terms.": "Jedes Startup hat einen Lead-Investor, der alles prüft. Wir investieren zu gleichen Konditionen.", "Top accelerators": "Top-Accelerator", "Picks from leading programmes": "Auswahl aus führenden Programmen", "Established VC funds": "Top-VC-Fonds", "We join rounds they lead": "Wir investieren in ihren Runden", "Angel and university networks": "Angel-Netzwerke", "Seasoned angels, alumni groups": "Erfahrene Angels, Alumni-Gruppen", "Women-led funds": "Frauen-geführte Fonds", "Known for finding hidden talent": "Finden verborgene Talente", "Protected:": "Geschützt:", "a licensed bank holds your money, not CapSi. Each pool is audited yearly.": "Eine lizenzierte Bank verwahrt dein Geld. Jährlich geprüft.", "Where my money goes": "Wohin mein Geld fließt", "Where your money goes": "Wohin dein Geld fließt", "You see every startup you own": "Du siehst jedes deiner Startups", "Pool 1 · Winter 2026": "Pool 1 · Winter 2026", "8–12 startups · pre-seed to Series A": "8–12 Startups · Pre-Seed bis Series A", "Europe 70%": "Europa 70 %", "US 30%": "USA 30 %", "AI · Health · Climate · Fintech · Consumer": "KI · Gesundheit · Klima · Fintech · Konsum", "For every startup you'll see": "Für jedes Startup siehst du", "The founders and why we invested": "Die Gründer:innen und warum wir investiert haben", "Round, valuation and lead investor": "Runde, Bewertung und Lead-Investor", "The main risk, in plain words": "Das Hauptrisiko, in klaren Worten", "Founder updates every quarter": "Updates der Gründer:innen jedes Quartal", "All fees in one place": "Alle Gebühren auf einen Blick", "What you get": "Was du bekommst", "What we want to give you": "Was wir dir geben wollen", "Built with women investors": "Mit Investorinnen gebaut", "Returns first": "Rendite zuerst", "Quality, not pedigree. Many overlooked founders are women.": "Qualität statt Herkunft. Viele Übersehene sind Frauen.", "Know what you own": "Wissen, was dir gehört", "Plain reports, short lessons, live Q&As with VCs.": "Klare Berichte, Lektionen, Live-Q&As.", "A circle of women investors": "Ein Kreis von Investorinnen", "Learn together, help founders, earn credits.": "Gemeinsam lernen, Gründer:innen helfen, Credits sammeln.", "A clear way out": "Ein klarer Ausstieg", "Cash out once a year, with rules you see upfront.": "Einmal im Jahr, mit klaren Regeln.", "Set up my plan": "Meinen Plan einrichten", "Back to the app": "Zurück zur App", "Skip intro": "Intro überspringen", "Close": "Schließen", "About CapSi": "Über CapSi", "Who runs it, who we invest with, where your money goes": "Wer dahinter steht, mit wem wir investieren, wohin dein Geld fließt", "Open deals": "Offene Deals", "Open deal": "Offener Deal", "Lead investor": "Lead-Investor", "Skip this deal": "Diesen Deal auslassen", "Members with a plan join this round automatically.": "Mitglieder mit Plan sind bei dieser Runde automatisch dabei.", "A top-10 European seed fund": "Ein Top-10-Seed-Fonds in Europa", "An angel network of fintech operators": "Ein Angel-Netzwerk aus Fintech-Praktiker:innen", "A health-tech seed fund": "Ein Health-Tech-Seed-Fonds", "An angel network of e-commerce founders": "Ein Angel-Netzwerk aus E-Commerce-Gründer:innen", "A climate VC fund": "Ein Klima-VC-Fonds", "An established Series A fund": "Ein etablierter Series-A-Fonds", "A women-led health fund": "Ein von Frauen geführter Health-Fonds", "An agri-tech accelerator": "Ein Agri-Tech-Accelerator", "AI that checks building plans for fire-safety errors in minutes.": "KI, die Baupläne in Minuten auf Brandschutzfehler prüft.", "A fire-safety engineer and a machine-learning engineer who met at a city planning office.": "Eine Brandschutzingenieurin und ein Machine-Learning-Ingenieur, die sich im Bauamt kennengelernt haben.", "Building approvals take months. Veyra cuts each check from weeks to hours.": "Baugenehmigungen dauern Monate. Veyra verkürzt jede Prüfung von Wochen auf Stunden.", "Every country has its own building codes.": "Jedes Land hat eigene Bauvorschriften.", "3 city councils are piloting it.": "3 Stadtverwaltungen testen es bereits.", "Shared savings accounts for families who send money home.": "Gemeinsame Sparkonten für Familien, die Geld in die Heimat schicken.", "Two sisters who sent money to family abroad for 15 years. No banking background, 9,000 users already.": "Zwei Schwestern, die 15 Jahre lang Geld an Familie im Ausland geschickt haben. Kein Bank-Hintergrund, schon 9.000 Nutzer:innen.", "Families abroad send billions home every year and pay high fees each time.": "Familien im Ausland schicken jedes Jahr Milliarden nach Hause und zahlen jedes Mal hohe Gebühren.", "Money-transfer licences take time.": "Lizenzen für Geldtransfers brauchen Zeit.", "9,000 users. Waiting on a licence in 2 more states.": "9.000 Nutzer:innen. Warten auf die Lizenz in 2 weiteren Bundesstaaten.", "Stockholm": "Stockholm", "Chicago": "Chicago", "After this test, how much would you trust CapSi with your money?": "Wie sehr würdest du CapSi nach diesem Test dein Geld anvertrauen?", "What builds the most trust for you? (pick up to 3)": "Was schafft für dich am meisten Vertrauen? (bis zu 3)", "Lead investors we invest alongside": "Lead-Investoren, mit denen wir investieren", "Seeing every startup I own": "Jedes Startup sehen, das mir gehört", "Bank and legal protection": "Schutz durch Bank und Recht", "Clear cash-out rules": "Klare Auszahlungsregeln", "A community of women investors": "Eine Community von Investorinnen", "Seeing open deals": "Offene Deals sehen", "What would you still need to trust CapSi with your money?": "Was bräuchtest du noch, um CapSi dein Geld anzuvertrauen?"};
+/* ---------- German / English ---------- */
+const DE_RX = [
+  [/^(\d+) days left$/, '$1 Tage übrig'],
+  [/^(\d+) this month$/, '$1 diesen Monat'],
+  [/^(\d+)% filled$/, '$1 % gefüllt'],
+  [/^Open now · closes in (\d+) days$/, 'Offen · endet in $1 Tagen'],
+  [/^Lead: (.+)$/, (m,a)=>'Lead: '+(DE[a]||a)],
+  [/^Your plan joins this round automatically, about \$(\d+) of your next deposit\. You can skip any deal\.$/, 'Dein Plan ist bei dieser Runde automatisch dabei, mit etwa $$$1 deiner nächsten Einzahlung. Du kannst jeden Deal auslassen.'],
+  [/^You'll skip (.+)$/, '$1 wird ausgelassen'],
+  [/^(.+), your plan is ready\.$/, '$1, dein Plan ist bereit.'],
+  [/^(.+), you're in the CapSi community\.$/, '$1, du bist jetzt in der CapSi-Community.'],
+  [/^(.+), you're a CapSi community member$/, '$1, du bist CapSi-Community-Mitglied'],
+  [/^\$(\d[\d,]*) a month into a diversified startup portfolio\.$/, '$$$1 im Monat in ein breit gestreutes Startup-Portfolio.'],
+  [/^a year · about \$([\d,]+)\/month$/, 'pro Jahr · etwa $$$1/Monat'],
+  [/^Your plan: \$([\d,]+)\/month = \$([\d,]+) a year$/, 'Dein Plan: $$$1/Monat = $$$2 pro Jahr'],
+  [/^Lower my plan to \$(\d+) a month$/, 'Plan auf $$$1 im Monat senken'],
+  [/^\$([\d,]+) invested ·$/, '$$$1 investiert ·'],
+  [/^\+\$([\d,]+) on paper$/, '+$$$1 auf dem Papier'],
+  [/^\$([\d,]+) \/ month$/, '$$$1 / Monat'],
+  [/^(\d+) in total$/, '$1 insgesamt'],
+  [/^(\d+) shown$/, '$1 angezeigt'],
+  [/^(\d+) spots? left$/, 'noch $1 Plätze'],
+  [/^Help (.+): \+([\d.]+) credits?$/, (m, n, a) => n + ' helfen: +' + a.replace('.', ',') + (a === '1' ? ' Credit' : ' Credits')],
+  [/^\+([\d.]+) credits?$/, (m, a) => '+' + a.replace('.', ',') + (a === '1' ? ' Credit' : ' Credits')],
+  [/^([\d.]+) credits?$/, (m, a) => a.replace('.', ',') + (a === '1' ? ' Credit' : ' Credits')],
+  [/^([\d.]+) cr$/, (m, a) => a.replace('.', ',') + ' Cr'],
+  [/^Request for ([\d.]+) credits?$/, (m, a) => 'Für ' + a.replace('.', ',') + (a === '1' ? ' Credit' : ' Credits') + ' anfragen'],
+  [/^With (.+)$/, (m, n) => 'Mit ' + (DE[n] || n)],
+  [/^A short note for (.+)$/, 'Eine kurze Nachricht an $1'],
+  [/^(\d+) of (\d+) done$/, '$1 von $2 erledigt'],
+  [/^(\d+) min read$/, '$1 Min. Lesezeit'],
+  [/^([\d.]+) hours? given$/, (m, a) => a.replace('.', ',') + (a === '1' ? ' Stunde' : ' Stunden') + ' geholfen'],
+  [/^([\d.]+) more hours? of help to reach$/, (m, a) => 'Noch ' + a.replace('.', ',') + ' Std. Hilfe bis'],
+  [/^\$([\d.]+[MK]) seed$/, '$$$1 Seed-Runde'],
+  [/^\$([\d.]+[MK]) pre-seed$/, '$$$1 Pre-Seed-Runde'],
+  [/^\$([\d.]+[MK]) Series A$/, '$$$1 Series-A-Runde'],
+  [/^\$([\d,]+) \(about \$([\d,]+)\/month\)$/, '$$$1 (etwa $$$2/Monat)'],
+  [/^About \$([\d,]+)$/, 'Etwa $$$1'],
+  [/^Everything \(about \$([\d,]+)\)$/, 'Alles (etwa $$$1)'],
+  [/^\$([\d,]+) · first payout by 31 Jan$/, '$$$1 · erste Auszahlung bis 31. Jan.'],
+  [/^Hi (.+)$/, 'Hallo $1'],
+  [/^Request sent to (.+)$/, 'Anfrage an $1 gesendet'],
+  [/^Plan updated to \$(\d+) a month$/, 'Plan auf $$$1 im Monat geändert'],
+  [/^Plan lowered to \$(\d+) a month$/, 'Plan auf $$$1 im Monat gesenkt'],
+  [/^Your plan starts at \$(\d+) a month$/, 'Dein Plan startet mit $$$1 im Monat'],
+  [/^Level up: you're now a (.+)!$/, 'Level-up: Du bist jetzt $1!'],
+  [/^Thanks! (.+) will confirm after the call\.$/, 'Danke! $1 bestätigt nach dem Gespräch.'],
+  [/^(Everything|\$[\d,]+) will be paid to your bank account\. If this year's requests stay under the 5% limit, it all arrives by 31 Jan 2027\. If not, you'll get a first part then and the rest in the next window\(s\)\.$/,
+    (m, a) => (a === 'Everything' ? 'Alles' : a) + ' wird auf dein Bankkonto ausgezahlt. Bleiben die Anträge dieses Jahr unter dem 5-%-Limit, kommt alles bis 31. Jan. 2027. Wenn nicht, bekommst du dann einen ersten Teil und den Rest im nächsten Fenster.'],
+  [/^That's above your yearly limit of \$([\d,]+)\. The most you can invest is \$(\d+) a month\.$/, 'Das liegt über deinem Jahreslimit von $$$1. Du kannst höchstens $$$2 im Monat investieren.'],
+  [/^(\d+) taps$/, '$1 Taps'],
+  [/^Feedback per screen \((\d+)\)$/, 'Feedback pro Screen ($1)'],
+  [/^(\d+) notes$/, '$1 Notizen'],
+  [/^(Clear|Confusing|Love it|Not useful): (\d+)$/, (m, a, b) => (DE[a] || a) + ': ' + b],
+  [/^Who tested \((\d+)\)$/, 'Wer getestet hat ($1)'],
+  [/^([\d.]+) min$/, (m, a) => a.replace('.', ',') + ' Min.'],
+  [/^\((\d+)\) · average ([\d.]+)$/, (m, a, b) => '(' + a + ') · Durchschnitt ' + b.replace('.', ',')],
+  [/^\((\d+)\)$/, '($1)'],
+  [/^Early-access emails \((\d+)\)$/, 'E-Mails für frühen Zugang ($1)'],
+  [/^Thank you, (.+)!$/, 'Danke, $1!'],
+  [/^Thank you!$/, 'Danke!']
+];
+function trOne(t) {
+  if (DE[t] !== undefined) return DE[t];
+  for (const [rx, rep] of DE_RX) if (rx.test(t)) return t.replace(rx, rep);
+  if (t.includes('·')) {
+    const parts = t.split(/\s*·\s*/);
+    const out = parts.map(p => p === '' ? '' : (trOne(p) ?? p));
+    if (out.some((o, i) => o !== parts[i])) return out.join(' · ').replace(/^ · /, '· ');
+  }
+  if (t.includes(', ')) {
+    const parts = t.split(', '), out = parts.map(p => DE[p]);
+    if (out.every(x => x !== undefined)) return out.join(', ');
+  }
+  return null;
+}
+function trText(n) {
+  const raw = n.nodeValue, t = raw.replace(/\s+/g, ' ').trim();
+  if (!t || !/[A-Za-z]/.test(t)) return;
+  const r = trOne(t);
+  if (r != null && r !== t) n.nodeValue = (/^\s/.test(raw) && !/^[,.]/.test(r) ? ' ' : '') + r + (/\s$/.test(raw) ? ' ' : '');
+}
+function translateTree(root) {
+  if (!root || S.lang !== 'de') return;
+  if (root.nodeType === 3) { trText(root); return; }
+  if (root.nodeType !== 1) return;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = []; let n; while ((n = w.nextNode())) nodes.push(n);
+  nodes.forEach(trText);
+  const els = [root, ...root.querySelectorAll('[placeholder],[aria-label],[title]')];
+  els.forEach(el => ['placeholder', 'aria-label', 'title'].forEach(a => {
+    const v = el.getAttribute && el.getAttribute(a); if (!v) return;
+    const r = trOne(v.trim()); if (r != null && r !== v) el.setAttribute(a, r);
+  }));
+}
+new MutationObserver(muts => {
+  if (S.lang !== 'de') return;
+  for (const m of muts) {
+    if (m.type === 'characterData') trText(m.target);
+    else m.addedNodes.forEach(nd => translateTree(nd));
+  }
+}).observe(document.body, { childList: true, subtree: true, characterData: true });
+function langToggle() {
+  return `<span class="lang"><button data-l="en" class="${S.lang === 'en' ? 'on' : ''}" onclick="setLang('en')">EN</button><i>/</i><button data-l="de" class="${S.lang === 'de' ? 'on' : ''}" onclick="setLang('de')">DE</button></span>`;
+}
+function setLang(l) {
+  if (S.lang === l) return;
+  S.lang = l; log('lang:' + l);
+  document.documentElement.lang = l;
+  closeSheet();
+  $('side').innerHTML = RESULTS ? summaryHTML() : SIDE0;
+  render();
+  document.querySelectorAll('.lang button[data-l]').forEach(b => b.classList.toggle('on', b.dataset.l === l));
+  if (l === 'de') translateTree(document.body);
+}
+document.documentElement.lang = S.lang;
+document.querySelectorAll('.lang button[data-l]').forEach(b => b.classList.toggle('on', b.dataset.l === S.lang));
+if (S.lang === 'de') translateTree(document.body);
+
+/* ---------- fit the visible screen (iPhone app, browsers) ---------- */
+function fitHeight() {
+  const h = Math.round((window.visualViewport && window.visualViewport.height) || window.innerHeight);
+  if (h > 200) document.documentElement.style.setProperty('--app-h', h + 'px');
+  if (RESULTS) drawHeat();
+}
+fitHeight();
+window.addEventListener('resize', fitHeight);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', fitHeight);
+
+</script>
+</body>
+</html>
